@@ -6,7 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dio/dio.dart';
+import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 
 class TranslateView extends StatefulWidget {
   const TranslateView({super.key});
@@ -16,14 +18,21 @@ class TranslateView extends StatefulWidget {
 }
 
 class _TranslateViewState extends State<TranslateView> {
-  bool _hasResult = false;
-  bool _inResultView = false;
+  // bool _hasResult = false;
+  // bool _inResultView = false;
 
-
-
-  /// [PlutoGridStateManager] has many methods and properties to dynamically manipulate the grid.
-  /// You can manipulate the grid dynamically at runtime by passing this through the [onLoaded] callback.
   late final PlutoGridStateManager stateManager;
+
+  String? _currentSentence;
+  final TextEditingController _textEditingController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    _currentSentence=appDataViewModel.currentSentence;
+    _textEditingController.text=_currentSentence??"";
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +73,12 @@ class _TranslateViewState extends State<TranslateView> {
                             height: 150,
                             width: 1000, // your scroll width
                             child: TextFormField(
+                              controller: _textEditingController,
+                              onChanged: (currentText){
+                                AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                                appDataViewModel.currentSentence=currentText;
+                                print("done");
+                              },
                               keyboardType: TextInputType.multiline,
                               expands: true,
                               maxLines: null,

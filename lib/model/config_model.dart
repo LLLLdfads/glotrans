@@ -169,3 +169,14 @@
 //     "丹麦": empty,
 //   };
 // }
+
+import 'package:flutter/material.dart';
+import 'package:glo_trans/model/target_language_config_model.dart';
+
+class ConfigModel extends ChangeNotifier {
+  ConfigModel({required this.deeplKey, required this.targetLanguageConfigList});
+
+  final String deeplKey;
+
+  final List<TargetLanguageConfigModel> targetLanguageConfigList;
+}

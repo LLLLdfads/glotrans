@@ -5,6 +5,8 @@ import 'package:glo_trans/view/export_view.dart';
 import 'package:glo_trans/view/history_view.dart';
 import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
+import 'package:glo_trans/view_model/app_data_view_model.dart';
+import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -25,19 +27,26 @@ void main() async {
   runApp(const MyApp());
   // pickAndLoadJsonFile();
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter EasyLoading',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppDataViewModel>(
+            create: (_) => AppDataViewModel())
+      ],
+      child: MaterialApp(
+        title: 'Flutter EasyLoading',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const App(),
+        builder: EasyLoading.init(),
       ),
-      home: const App(),
-      builder: EasyLoading.init(),
     );
   }
 }
