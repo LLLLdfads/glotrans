@@ -10,7 +10,6 @@ class HistoryView extends StatefulWidget {
 class _HistoryViewState extends State<HistoryView> {
   @override
   Widget build(BuildContext context) {
-    
     return Center(child: Text("以时间划分存放的结果，并且支持导出excel文件"),);
   }
 }
