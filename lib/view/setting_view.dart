@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/utils.dart';
+import 'package:provider/provider.dart';
+
+import '../view_model/app_data_view_model.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -12,39 +16,14 @@ class SettingsView extends StatefulWidget {
 class _SettingsViewState extends State<SettingsView> {
   String f = "";
   bool _checked = true;
-  List<String> _allLanguage = [
-    "简体 ZH-HANS",
-    "繁体 ZH-HANT",
-    "英语 EN-US",
-    "瑞典 SV",
-    "日文 JA",
-    "葡萄牙 PT-PT",
-    "西班牙 ES",
-    "土耳其 TR",
-    "德文 DE",
-    "俄文 RU",
-    "法文 FR",
-    "意文 IT",
-    "波兰 PL",
-    "荷兰 NL",
-    "捷克 CS",
-    "斯洛伐克 SK",
-    "韩文 KO",
-    "丹麦文 DA",
-    "阿拉伯 AR",
-    "保加利亚 BG",
-    "希腊 EL",
-    "爱沙尼亚 ET",
-    "芬兰 FI",
-    "匈牙利 HU",
-    "印尼 ID",
-    "立陶宛 LT",
-    "拉脱维亚 LV",
-    "挪威 NB",
-    "罗马尼亚文RO",
-    "斯洛文尼亚 SL",
-    "乌克兰 UK",
-  ];
+  List<TargetLanguageConfigModel> _allLanguageConfig = [];
+
+  @override
+  void initState() {
+    super.initState();
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    _allLanguageConfig = appDataViewModel.config.targetLanguageConfigList;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +37,7 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 Text(
                   "deepl密钥:$f",
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 const SizedBox(
@@ -86,11 +65,6 @@ class _SettingsViewState extends State<SettingsView> {
                         fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
-                // "简体中文": "ZH-HANS",  "繁体中文": "ZH-HANT",   "英语": "EN-US",    "瑞典": "SV",
-                // "日语": "JA",          "葡萄牙": "PT-PT",      "西班牙语": "ES",     "土耳其": "TR",
-                // "德语": "DE",          "俄语": "RU",           "法语": "FR",       "意大利语": "IT",
-                // "波兰": "PL",          "荷兰语": "NL",         "捷克": "CS",       "斯洛伐克": "SK",
-                // "韩语": "KO",          "丹麦": "DA"
                 const SizedBox(
                   height: 10,
                 ),
@@ -106,8 +80,7 @@ class _SettingsViewState extends State<SettingsView> {
                       crossAxisSpacing: 5, // 可选：添加水平间距
                       mainAxisSpacing: 3, // 可选：添加垂直间距
                     ),
-                    children: List.generate(_allLanguage.length, (index) {
-                      // 生成10个子元素作为示例
+                    children: List.generate(_allLanguageConfig.length, (index) {
                       return Row(
                         children: [
                           MouseRegion(
@@ -122,9 +95,9 @@ class _SettingsViewState extends State<SettingsView> {
                                       return AlertDialog(
                                         title: Center(
                                           child: Text(
-                                              "${_allLanguage[index]}文件地址选择"),
+                                              "${_allLanguageConfig[index].country} ${_allLanguageConfig[index].language}文件地址选择"),
                                         ),
-                                        content: Container(
+                                        content: SizedBox(
                                           width: 400,
                                           height: 200,
                                           child: Column(
@@ -132,7 +105,10 @@ class _SettingsViewState extends State<SettingsView> {
                                               Row(
                                                 children: [
                                                   Checkbox(
-                                                    value: _checked,
+                                                    value: _allLanguageConfig[
+                                                                index]
+                                                            .usel10n ==
+                                                        true,
                                                     activeColor:
                                                         Colors.lightGreen,
                                                     checkColor: Colors.white,
@@ -160,16 +136,35 @@ class _SettingsViewState extends State<SettingsView> {
                                                               "l10n文件路径（安卓无需选择）"),
                                                     ),
                                                   ),
-                                                  FaIcon(
-                                                    FontAwesomeIcons.file,
-                                                    color: Color(0xff347080),
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      String? oneL10nPath =
+                                                          await pickFile("arb");
+                                                      if (oneL10nPath != null) {
+                                                        _allLanguageConfig[
+                                                                index]
+                                                            .usel10n = _checked;
+                                                        _allLanguageConfig[
+                                                                    index]
+                                                                .l10nPath =
+                                                            oneL10nPath;
+                                                        setState(() {});
+                                                      }
+                                                    },
+                                                    child: const FaIcon(
+                                                      FontAwesomeIcons.file,
+                                                      color: Color(0xff347080),
+                                                    ),
                                                   ),
                                                 ],
                                               ),
                                               Row(
                                                 children: [
                                                   Checkbox(
-                                                    value: _checked,
+                                                    value: _allLanguageConfig[
+                                                                index]
+                                                            .useAndroid ==
+                                                        true,
                                                     activeColor:
                                                         Colors.lightGreen,
                                                     checkColor: Colors.white,
@@ -233,7 +228,7 @@ class _SettingsViewState extends State<SettingsView> {
                                   //     : Colors.transparent,
                                 ),
                                 child: Text(
-                                  _allLanguage[index],
+                                  "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
                                   style: const TextStyle(
                                       color: Colors.white, fontSize: 10),
                                 ),

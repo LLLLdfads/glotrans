@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:glo_trans/app_const.dart';
+import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/view/export_view.dart';
 import 'package:glo_trans/view/history_view.dart';
 import 'package:glo_trans/view/setting_view.dart';
@@ -67,6 +69,22 @@ class _AppState extends State<App> {
   bool _settingsBtnClicked = false;
   bool _historyBtnHovered = false;
   bool _historyBtnClicked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initConfig();
+  }
+
+  void _initConfig() {
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    for (var countryLanguage in AppConst.allCountryLanguage) {
+      appDataViewModel.config.targetLanguageConfigList.add(
+          TargetLanguageConfigModel(
+              country: countryLanguage.split(" ")[0],
+              language: countryLanguage.split(" ")[1]));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
