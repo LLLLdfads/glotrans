@@ -55,7 +55,6 @@ Future<List<String>> translateOneLanguageTexts(String language,List<String> text
       response.data['translations'].forEach((e) {
         res.add(e.toString());
       });
-      // res = response.data['translations'].map((e) => e['text'] as String).toList<String>();
     } else {
       print('翻译失败：${response.statusCode}');
     }

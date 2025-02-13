@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../view_model/app_data_view_model.dart';
 
@@ -17,6 +19,9 @@ class _SettingsViewState extends State<SettingsView> {
   String f = "";
   bool _checked = true;
   List<TargetLanguageConfigModel> _allLanguageConfig = [];
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final List<String> _settingItems = ["翻译选项", "导出设置", "系统语言", "deepl密钥", "关于"];
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -25,293 +30,48 @@ class _SettingsViewState extends State<SettingsView> {
     _allLanguageConfig = appDataViewModel.config.targetLanguageConfigList;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 70),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Row(
-              children: [
-                Text(
-                  "deepl密钥:$f",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(
-                  height: 30,
-                  width: 200,
-                  child: TextField(
-                    obscureText: true,
-                  ),
-                )
-              ],
+  List<Widget> _getConfigContentList() {
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: Column(
+          children: [
+            const SizedBox(
+              width: double.infinity,
+              child: Text(
+                "翻译选项",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-          ),
-          const Divider(
-            color: Colors.white38,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                const SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    "翻译选项:",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 110,
-                  child: GridView(
-                    physics: const NeverScrollableScrollPhysics(), // 禁止滚动
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 6,
-                      childAspectRatio: 5, // 添加这个属性来控制子元素的宽高比
-                      crossAxisSpacing: 5, // 可选：添加水平间距
-                      mainAxisSpacing: 3, // 可选：添加垂直间距
-                    ),
-                    children: List.generate(_allLanguageConfig.length, (index) {
-                      return Row(
-                        children: [
-                          MouseRegion(
-                            onEnter: (_) {},
-                            onExit: (_) {},
-                            child: GestureDetector(
-                              onTap: () {
-                                // Fluttertoast.showToast(msg: "ddds");
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return AlertDialog(
-                                        title: Center(
-                                          child: Text(
-                                              "${_allLanguageConfig[index].country} ${_allLanguageConfig[index].language}文件地址选择"),
-                                        ),
-                                        content: SizedBox(
-                                          width: 400,
-                                          height: 200,
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Checkbox(
-                                                    value: _allLanguageConfig[
-                                                                index]
-                                                            .usel10n ==
-                                                        true,
-                                                    activeColor:
-                                                        Colors.lightGreen,
-                                                    checkColor: Colors.white,
-                                                    tristate: true,
-                                                    overlayColor:
-                                                        MaterialStateProperty
-                                                            .all(Colors
-                                                                .transparent),
-                                                    // 移除悬停效果
-                                                    materialTapTargetSize:
-                                                        MaterialTapTargetSize
-                                                            .shrinkWrap,
-                                                    onChanged: (data) {
-                                                      print(data);
-                                                      setState(() {
-                                                        _checked = !_checked;
-                                                      });
-                                                    },
-                                                  ),
-                                                  Container(
-                                                    width: 300,
-                                                    child: TextField(
-                                                      decoration: InputDecoration(
-                                                          hintText:
-                                                              "l10n文件路径（安卓无需选择）"),
-                                                    ),
-                                                  ),
-                                                  GestureDetector(
-                                                    onTap: () async {
-                                                      String? oneL10nPath =
-                                                          await pickFile("arb");
-                                                      if (oneL10nPath != null) {
-                                                        _allLanguageConfig[
-                                                                index]
-                                                            .usel10n = _checked;
-                                                        _allLanguageConfig[
-                                                                    index]
-                                                                .l10nPath =
-                                                            oneL10nPath;
-                                                        setState(() {});
-                                                      }
-                                                    },
-                                                    child: const FaIcon(
-                                                      FontAwesomeIcons.file,
-                                                      color: Color(0xff347080),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Checkbox(
-                                                    value: _allLanguageConfig[
-                                                                index]
-                                                            .useAndroid ==
-                                                        true,
-                                                    activeColor:
-                                                        Colors.lightGreen,
-                                                    checkColor: Colors.white,
-                                                    tristate: true,
-                                                    overlayColor:
-                                                        MaterialStateProperty
-                                                            .all(Colors
-                                                                .transparent),
-                                                    // 移除悬停效果
-                                                    materialTapTargetSize:
-                                                        MaterialTapTargetSize
-                                                            .shrinkWrap,
-                                                    onChanged: (data) {
-                                                      print(data);
-                                                      setState(() {
-                                                        _checked = !_checked;
-                                                      });
-                                                    },
-                                                  ),
-                                                  Container(
-                                                    width: 300,
-                                                    child: TextField(
-                                                      decoration: InputDecoration(
-                                                          hintText:
-                                                              "安卓文件路径（flutter无需选择）"),
-                                                    ),
-                                                  ),
-                                                  FaIcon(
-                                                    FontAwesomeIcons.file,
-                                                    color: Color(0xff347080),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: const Text("取消"),
-                                          ),
-                                          TextButton(
-                                              onPressed: () {},
-                                              child: const Text("确定")),
-                                        ],
-                                      );
-                                    });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.transparent,
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(2),
-                                  color: Colors.white10,
-                                  // color: _checked
-                                  //     ? Colors.green
-                                  //     : Colors.transparent,
-                                ),
-                                child: Text(
-                                  "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 10),
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Checkbox(
-                          //   value: _checked
-                          //   activeColor: Colors.lightGreen,
-                          //   checkColor: Colors.white,
-                          //   tristate: true,
-                          //   overlayColor:
-                          //       MaterialStateProperty.all(Colors.transparent),
-                          //   // 移除悬停效果
-                          //   materialTapTargetSize:
-                          //       MaterialTapTargetSize.shrinkWrap,
-                          //   onChanged: (data) {
-                          //     print(data);
-                          //     setState(() {
-                          //       _checked = !_checked;
-                          //     });
-                          //   },
-                          // ),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
-              ],
+            const SizedBox(
+              height: 10,
             ),
-          ),
-          const Divider(
-            color: Colors.white38,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              children: [
-                const SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    "导出设置:（插入词条位置标识，在其前/后插入词条）",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Container(
-                    width: double.infinity,
-                    height: 100,
-                    child: Column(
+            SizedBox(
+                width: double.infinity,
+                height: 300,
+                child: ListView(
+                  children: List.generate(_allLanguageConfig.length, (index) {
+                    return Column(
                       children: [
                         Row(
                           children: [
-                            Text("前"),
-                            Checkbox(
-                              value: _checked,
-                              activeColor: Colors.lightGreen,
-                              checkColor: Colors.white,
-                              tristate: true,
-                              overlayColor:
-                                  MaterialStateProperty.all(Colors.transparent),
-                              // 移除悬停效果
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) {
-                                print(data);
-                                setState(() {
-                                  _checked = !_checked;
-                                });
-                              },
-                            ),
                             Container(
-                              width: 300,
-                              child: TextField(
-                                decoration:
-                                    InputDecoration(hintText: "l10n翻译文件标识"),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.transparent,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(2),
+                                color: Colors.white10,
+                              ),
+                              child: Text(
+                                "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 12),
                               ),
                             ),
-                            Text("后"),
                             Checkbox(
-                              value: _checked,
+                              value: _allLanguageConfig[index].willTranslate,
                               activeColor: Colors.lightGreen,
                               checkColor: Colors.white,
                               tristate: true,
@@ -321,19 +81,18 @@ class _SettingsViewState extends State<SettingsView> {
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
-                                print(data);
                                 setState(() {
-                                  _checked = !_checked;
+                                  _allLanguageConfig[index].willTranslate=(data==true);
                                 });
                               },
                             ),
+                            // const
                           ],
                         ),
                         Row(
                           children: [
-                            Text("前"),
                             Checkbox(
-                              value: _checked,
+                              value: _allLanguageConfig[index].usel10n,
                               activeColor: Colors.lightGreen,
                               checkColor: Colors.white,
                               tristate: true,
@@ -343,22 +102,47 @@ class _SettingsViewState extends State<SettingsView> {
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
-                                print(data);
+                                if (data == true) {
+                                  if(_allLanguageConfig[index].l10nPath==null){
+                                    showDialog(context: context, builder: (_){
+                                      return const AlertDialog(
+                                        title: Text("请选择l10n文件"),
+                                      );
+                                    });
+                                    return;
+                                  }
+                                }
                                 setState(() {
-                                  _checked = !_checked;
+                                  _allLanguageConfig[index].usel10n=(data==true);
                                 });
                               },
                             ),
                             Container(
-                              width: 300,
-                              child: TextField(
-                                decoration:
-                                    InputDecoration(hintText: "安卓翻译文件标识"),
+                              width: 150,
+                              height: 20,
+                              child: TextField(),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                String? oneL10nPath = await pickFile("arb");
+                                if (oneL10nPath != null) {
+                                  _allLanguageConfig[index].usel10n = true;
+                                  _allLanguageConfig[index].l10nPath =
+                                      oneL10nPath;
+                                  setState(() {});
+                                }
+                              },
+                              child: const FaIcon(
+                                size: 20,
+                                FontAwesomeIcons.file,
+                                color: Color(0xff347080),
                               ),
                             ),
-                            Text("后"),
+                            const SizedBox(
+                              width: 5,
+                            ),
                             Checkbox(
-                              value: _checked,
+                              value: _allLanguageConfig[index].useAndroid,
                               activeColor: Colors.lightGreen,
                               checkColor: Colors.white,
                               tristate: true,
@@ -368,60 +152,311 @@ class _SettingsViewState extends State<SettingsView> {
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
-                                print(data);
                                 setState(() {
-                                  _checked = !_checked;
+                                  _allLanguageConfig[index].useAndroid=(data==true);
                                 });
                               },
                             ),
+                            const SizedBox(
+                              width: 150,
+                              height: 30,
+                              child: TextField(),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                String? androidPath = await pickFile("arb");
+                                if (androidPath != null) {
+                                  _allLanguageConfig[index].useAndroid = true;
+                                  _allLanguageConfig[index].androidPath =
+                                      androidPath;
+                                  setState(() {});
+                                }
+                              },
+                              child: const FaIcon(
+                                size: 20,
+                                FontAwesomeIcons.file,
+                                color: Color(0xff347080),
+                              ),
+                            )
                           ],
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        )
+                      ],
+                    );
+                  }),
+                )),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: Column(
+          children: [
+            const SizedBox(
+              width: double.infinity,
+              child: Text(
+                "导出设置",
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 100,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text("前"),
+                        Checkbox(
+                          value: _checked,
+                          activeColor: Colors.lightGreen,
+                          checkColor: Colors.white,
+                          tristate: true,
+                          overlayColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          // 移除悬停效果
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          onChanged: (data) {
+                            print(data);
+                            setState(() {
+                              _checked = !_checked;
+                            });
+                          },
+                        ),
+                        SizedBox(
+                          width: 300,
+                          child: TextField(
+                            decoration: InputDecoration(hintText: "l10n翻译文件标识"),
+                          ),
+                        ),
+                        Text("后"),
+                        Checkbox(
+                          value: _checked,
+                          activeColor: Colors.lightGreen,
+                          checkColor: Colors.white,
+                          tristate: true,
+                          overlayColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          // 移除悬停效果
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          onChanged: (data) {
+                            print(data);
+                            setState(() {
+                              _checked = !_checked;
+                            });
+                          },
                         ),
                       ],
                     ),
-                  ),
-                )
-              ],
-            ),
-          ),
-          const Divider(
-            color: Colors.white38,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Row(
-              children: [
-                const SizedBox(
-                  child: Text(
-                    "系统语言：",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
+                    Row(
+                      children: [
+                        Text("前"),
+                        Checkbox(
+                          value: _checked,
+                          activeColor: Colors.lightGreen,
+                          checkColor: Colors.white,
+                          tristate: true,
+                          overlayColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          // 移除悬停效果
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          onChanged: (data) {
+                            print(data);
+                            setState(() {
+                              _checked = !_checked;
+                            });
+                          },
+                        ),
+                        SizedBox(
+                          width: 300,
+                          child: TextField(
+                            decoration: InputDecoration(hintText: "安卓翻译文件标识"),
+                          ),
+                        ),
+                        Text("后"),
+                        Checkbox(
+                          value: _checked,
+                          activeColor: Colors.lightGreen,
+                          checkColor: Colors.white,
+                          tristate: true,
+                          overlayColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                          // 移除悬停效果
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          onChanged: (data) {
+                            print(data);
+                            setState(() {
+                              _checked = !_checked;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  width: 300,
-                  height: 50,
-                  child: DropdownMenu<String>(
-                    menuHeight: 400,
-                    initialSelection:
-                        ['简体', '繁体', 'English', 'Franch', '...'].first,
-                    onSelected: (_) {},
-                    dropdownMenuEntries: [
-                      '简体',
-                      '繁体',
-                      'English',
-                      'Franch',
-                      '...'
-                    ]
-                        .map((e) =>
-                            DropdownMenuEntry<String>(value: e, label: e))
-                        .toList(),
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
+              ),
+            )
+          ],
+        ),
       ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 0),
+        child: Row(
+          children: [
+            const SizedBox(
+              child: Text(
+                "系统语言",
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+            SizedBox(
+              width: 300,
+              height: 50,
+              child: DropdownMenu<String>(
+                menuHeight: 400,
+                initialSelection:
+                    ['简体', '繁体', 'English', 'Franch', '...'].first,
+                onSelected: (_) {},
+                dropdownMenuEntries: ['简体', '繁体', 'English', 'Franch', '...']
+                    .map((e) => DropdownMenuEntry<String>(value: e, label: e))
+                    .toList(),
+              ),
+            )
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: Row(
+          children: [
+            Text(
+              "deepl密钥",
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            const SizedBox(
+              height: 30,
+              width: 200,
+              child: TextField(
+                obscureText: true,
+              ),
+            )
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 0),
+        child: Row(
+          children: [
+            Text(
+              "关于",
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(
+              height: 30,
+              width: 200,
+              child: TextField(
+                obscureText: true,
+              ),
+            )
+          ],
+        ),
+      ),
+    ];
+  }
+
+  void _scrollToItem(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 120,
+          height: double.infinity,
+          child: Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: Column(
+                  children: List.generate(
+                      _settingItems.length,
+                      (index) => GestureDetector(
+                            onTap: () {
+                              _scrollToItem(index);
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _currentIndex = index;
+                                  _scrollToItem(index);
+                                });
+                              },
+                              child: SizedBox(
+                                  height: 50,
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 20,
+                                      ),
+                                      Container(
+                                          height: 4,
+                                          width: 4,
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                              color: _currentIndex == index
+                                                  ? Colors.white
+                                                  : Colors.white38)),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          _settingItems[index],
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: _currentIndex == index
+                                                  ? Colors.white
+                                                  : Colors.white38),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                            ),
+                          )))),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 20),
+          child: SizedBox(
+              width: 400,
+              height: 500, // 设置你想要的高度
+              child: ScrollablePositionedList.separated(
+                  physics: const ClampingScrollPhysics(),
+                  // 禁止触底反弹
+                  itemScrollController: itemScrollController,
+                  itemCount: 5,
+                  itemBuilder: (context, index) =>
+                      _getConfigContentList()[index],
+                  separatorBuilder: (context, index) => const Divider())),
+        )
+      ],
     );
   }
 }

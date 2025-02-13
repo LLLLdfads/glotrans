@@ -43,7 +43,7 @@ class _TranslateViewState extends State<TranslateView> {
       Map<String, String> sentences = parseInputStr(_textEditingController.text);
       List<List<String>> res =[];
       for (var e in appDataViewModel.config.targetLanguageConfigList) {
-        if(e.usel10n==true || e.useAndroid==true){
+        if(e.willTranslate){
           List<String>? eRes =await translateOneLanguageTexts(e.language, sentences.values.toList(), appDataViewModel.config.deeplKey);
           if(eRes.isNotEmpty){
             res.add(eRes);

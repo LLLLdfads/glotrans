@@ -47,7 +47,8 @@ dependencies:
   flutter_easyloading: ^3.0.5
   # 状态管理
   provider: ^6.0.3
-
+  # 指定list移动到指定位置
+  scrollable_positioned_list: ^0.3.8
 dev_dependencies:
   flutter_test:
     sdk: flutter
