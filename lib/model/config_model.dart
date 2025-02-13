@@ -174,9 +174,26 @@ import 'package:flutter/material.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 
 class ConfigModel extends ChangeNotifier {
-  ConfigModel({required this.deeplKey, required this.targetLanguageConfigList});
+  ConfigModel({
+    required this.deeplKey,
+    required this.targetLanguageConfigList,
+    this.l10nFlag,
+    this.insertBeforeL10nFlag = true,
+    this.androidFlag,
+    this.insertBeforeAndroidFlag = true,
+    this.systemLanguage = "china",
+  });
 
   final String deeplKey;
 
   final List<TargetLanguageConfigModel> targetLanguageConfigList;
+
+  /// 导出设置
+  String? l10nFlag;
+  bool insertBeforeL10nFlag; // 不是前面就是后面嘛
+  String? androidFlag;
+  bool insertBeforeAndroidFlag;
+
+  /// 系统语言
+  String systemLanguage;
 }

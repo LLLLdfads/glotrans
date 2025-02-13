@@ -31,6 +31,7 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   List<Widget> _getConfigContentList() {
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     return [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -82,7 +83,8 @@ class _SettingsViewState extends State<SettingsView> {
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
                                 setState(() {
-                                  _allLanguageConfig[index].willTranslate=(data==true);
+                                  _allLanguageConfig[index].willTranslate =
+                                      (data == true);
                                 });
                               },
                             ),
@@ -103,17 +105,21 @@ class _SettingsViewState extends State<SettingsView> {
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
                                 if (data == true) {
-                                  if(_allLanguageConfig[index].l10nPath==null){
-                                    showDialog(context: context, builder: (_){
-                                      return const AlertDialog(
-                                        title: Text("请选择l10n文件"),
-                                      );
-                                    });
+                                  if (_allLanguageConfig[index].l10nPath ==
+                                      null) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (_) {
+                                          return const AlertDialog(
+                                            title: Text("请选择l10n文件"),
+                                          );
+                                        });
                                     return;
                                   }
                                 }
                                 setState(() {
-                                  _allLanguageConfig[index].usel10n=(data==true);
+                                  _allLanguageConfig[index].usel10n =
+                                      (data == true);
                                 });
                               },
                             ),
@@ -153,7 +159,8 @@ class _SettingsViewState extends State<SettingsView> {
                                   MaterialTapTargetSize.shrinkWrap,
                               onChanged: (data) {
                                 setState(() {
-                                  _allLanguageConfig[index].useAndroid=(data==true);
+                                  _allLanguageConfig[index].useAndroid =
+                                      (data == true);
                                 });
                               },
                             ),
@@ -213,7 +220,7 @@ class _SettingsViewState extends State<SettingsView> {
                       children: [
                         Text("前"),
                         Checkbox(
-                          value: _checked,
+                          value: appDataViewModel.config.insertBeforeL10nFlag,
                           activeColor: Colors.lightGreen,
                           checkColor: Colors.white,
                           tristate: true,
@@ -225,7 +232,8 @@ class _SettingsViewState extends State<SettingsView> {
                           onChanged: (data) {
                             print(data);
                             setState(() {
-                              _checked = !_checked;
+                              appDataViewModel.config.insertBeforeL10nFlag =
+                                  !appDataViewModel.config.insertBeforeL10nFlag;
                             });
                           },
                         ),
@@ -237,7 +245,7 @@ class _SettingsViewState extends State<SettingsView> {
                         ),
                         Text("后"),
                         Checkbox(
-                          value: _checked,
+                          value: !appDataViewModel.config.insertBeforeL10nFlag,
                           activeColor: Colors.lightGreen,
                           checkColor: Colors.white,
                           tristate: true,
@@ -249,7 +257,8 @@ class _SettingsViewState extends State<SettingsView> {
                           onChanged: (data) {
                             print(data);
                             setState(() {
-                              _checked = !_checked;
+                              appDataViewModel.config.insertBeforeL10nFlag =
+                                  !appDataViewModel.config.insertBeforeL10nFlag;
                             });
                           },
                         ),
