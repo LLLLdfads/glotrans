@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -81,11 +83,14 @@ class _SettingsViewState extends State<SettingsView> {
                               // 移除悬停效果
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) {
+                              onChanged: (data) async{
                                 setState(() {
                                   _allLanguageConfig[index].willTranslate =
                                       (data == true);
                                 });
+                                await ConfigStore.saveConfig(
+                                  ConfigModel(deeplKey: appDataViewModel.config.deeplKey, targetLanguageConfigList: _allLanguageConfig)
+                                );
                               },
                             ),
                             // const
@@ -230,7 +235,6 @@ class _SettingsViewState extends State<SettingsView> {
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           onChanged: (data) {
-                            print(data);
                             setState(() {
                               appDataViewModel.config.insertBeforeL10nFlag =
                                   !appDataViewModel.config.insertBeforeL10nFlag;
@@ -243,7 +247,7 @@ class _SettingsViewState extends State<SettingsView> {
                             decoration: InputDecoration(hintText: "l10n翻译文件标识"),
                           ),
                         ),
-                        Text("后"),
+                        const Text("后"),
                         Checkbox(
                           value: !appDataViewModel.config.insertBeforeL10nFlag,
                           activeColor: Colors.lightGreen,
@@ -255,7 +259,6 @@ class _SettingsViewState extends State<SettingsView> {
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           onChanged: (data) {
-                            print(data);
                             setState(() {
                               appDataViewModel.config.insertBeforeL10nFlag =
                                   !appDataViewModel.config.insertBeforeL10nFlag;
@@ -278,7 +281,6 @@ class _SettingsViewState extends State<SettingsView> {
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           onChanged: (data) {
-                            print(data);
                             setState(() {
                               _checked = !_checked;
                             });
@@ -302,7 +304,6 @@ class _SettingsViewState extends State<SettingsView> {
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           onChanged: (data) {
-                            print(data);
                             setState(() {
                               _checked = !_checked;
                             });

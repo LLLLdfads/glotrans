@@ -2,17 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/app_const.dart';
+import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/view/export_view.dart';
 import 'package:glo_trans/view/history_view.dart';
 import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-
+import 'package:path_provider/path_provider.dart' as path_provider;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final appDocumentDirectory = await path_provider.getApplicationDocumentsDirectory();
+  Hive.init(appDocumentDirectory.path);
+  Hive.registerAdapter(TargetLanguageConfigModelAdapter());
+  Hive.registerAdapter(ConfigModelAdapter());
+
   await windowManager.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
@@ -74,6 +83,7 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     _initConfig();
+    _initData();
   }
 
   void _initConfig() {
@@ -83,6 +93,14 @@ class _AppState extends State<App> {
           TargetLanguageConfigModel(
               country: countryLanguage.split(" ")[0],
               language: countryLanguage.split(" ")[1]));
+    }
+  }
+
+  Future _initData() async{
+    ConfigModel? savedConfig = await ConfigStore.getConfig();
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    if(savedConfig != null){
+      appDataViewModel.config= savedConfig;
     }
   }
 
