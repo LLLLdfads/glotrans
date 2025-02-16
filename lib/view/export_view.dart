@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 
 class ExportView extends StatefulWidget {
   const ExportView({super.key});
@@ -76,34 +78,65 @@ class _ExportViewState extends State<ExportView> {
       },
     ),
   ];
+
+  bool _translating = false;
+  int _currentWillTranslateLanguageLength = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    appDataViewModel.addListener(_handleAppDataVM);
+  }
+
+  void _handleAppDataVM() {
+    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+    _translating = appDataViewModel.translating;
+    _currentWillTranslateLanguageLength =
+        appDataViewModel.config.targetLanguageConfigList.length;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  Column(
+    return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const ClipRRect(
+            ClipRRect(
               // 边界半径（`borderRadius`）属性，圆角的边界半径。
               borderRadius: BorderRadius.all(Radius.circular(10.0)),
               child: SizedBox(
-                height: 15,
-                width: 300,
-                child: LinearProgressIndicator(
-                  value: 1 / 20,
-                  backgroundColor: Color(0xff436E7E),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.lightGreen),
-                ),
-              ),
+                  height: 15,
+                  width: 300,
+                  child: _translating
+                      ? Selector<AppDataViewModel, int>(
+                          selector: (_, vm) => vm.currentTranslateProgress,
+                          builder: (context, currentTranslateProgress, child) {
+                            return LinearProgressIndicator(
+                              value: currentTranslateProgress /
+                                  _currentWillTranslateLanguageLength,
+                              backgroundColor: const Color(0xff436E7E),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.lightGreen),
+                            );
+                          })
+                      : Container()
+                  // child: LinearProgressIndicator(
+                  //   value: 1 / 20,
+                  //   backgroundColor: Color(0xff436E7E),
+                  //   valueColor: AlwaysStoppedAnimation<Color>(
+                  //       Colors.lightGreen),
+                  // ),
+                  ),
             ),
             const SizedBox(
               width: 10,
             ),
             Text(
               "${(1 / 2 * 100).toStringAsFixed(1)}%",
-              style: const TextStyle(
-                  color: Colors.white70, fontSize: 16),
+              style: const TextStyle(color: Colors.white70, fontSize: 16),
             ),
             const SizedBox(
               width: 10,
@@ -116,30 +149,29 @@ class _ExportViewState extends State<ExportView> {
         ),
         Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 10, right: 10, top: 10, bottom: 10),
-              child: PlutoGrid(
-                columns: columns,
-                rows: rows,
-                onLoaded: (PlutoGridOnLoadedEvent event) {
-                  // stateManager = event.stateManager;
-                },
-                onChanged: (PlutoGridOnChangedEvent event) {
-                  print(event);
-                },
-                configuration: const PlutoGridConfiguration(
-                  style: PlutoGridStyleConfig(
-                    iconColor: Colors.transparent,
-                    gridBackgroundColor: Colors.white38,
-                    oddRowColor: Colors.white60,
-                    borderColor: Colors.white70,
-                    gridBorderColor: Colors.transparent,
-                    gridBorderRadius:
-                    BorderRadius.all(Radius.circular(5.0)),
-                  ),
-                ),
+          padding:
+              const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+          child: PlutoGrid(
+            columns: columns,
+            rows: rows,
+            onLoaded: (PlutoGridOnLoadedEvent event) {
+              // stateManager = event.stateManager;
+            },
+            onChanged: (PlutoGridOnChangedEvent event) {
+              print(event);
+            },
+            configuration: const PlutoGridConfiguration(
+              style: PlutoGridStyleConfig(
+                iconColor: Colors.transparent,
+                gridBackgroundColor: Colors.white38,
+                oddRowColor: Colors.white60,
+                borderColor: Colors.white70,
+                gridBorderColor: Colors.transparent,
+                gridBorderRadius: BorderRadius.all(Radius.circular(5.0)),
               ),
-            )),
+            ),
+          ),
+        )),
         SizedBox(
           height: 100,
           width: double.infinity,
@@ -149,29 +181,33 @@ class _ExportViewState extends State<ExportView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    AppDataViewModel appDataViewModel =
+                        context.read<AppDataViewModel>();
+                    appDataViewModel.testNotifyListeners();
+                  },
                   style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
                       elevation: MaterialStateProperty.all<double>(0),
-                      overlayColor: MaterialStateProperty.all<Color>(
-                          Colors.white24)),
+                      overlayColor:
+                          MaterialStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导入项目",
-                      style:
-                      TextStyle(color: Colors.white, fontSize: 16)),
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
-                const SizedBox(width: 20,),
+                const SizedBox(
+                  width: 20,
+                ),
                 ElevatedButton(
                   onPressed: () {},
                   style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
                       elevation: MaterialStateProperty.all<double>(0),
-                      overlayColor: MaterialStateProperty.all<Color>(
-                          Colors.white24)),
+                      overlayColor:
+                          MaterialStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导出表格",
-                      style:
-                      TextStyle(color: Colors.white, fontSize: 16)),
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
                 )
               ],
             ),

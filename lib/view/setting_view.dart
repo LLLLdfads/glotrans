@@ -24,12 +24,28 @@ class _SettingsViewState extends State<SettingsView> {
   final ItemScrollController itemScrollController = ItemScrollController();
   final List<String> _settingItems = ["翻译选项", "导出设置", "系统语言", "deepl密钥", "关于"];
   int _currentIndex = 0;
+  // 翻译选项的controller
+  final List<List<TextEditingController>> _translateOptionControllers = [];
 
   @override
   void initState() {
     super.initState();
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     _allLanguageConfig = appDataViewModel.config.targetLanguageConfigList;
+    appDataViewModel.config.targetLanguageConfigList.forEach((element) {
+      _translateOptionControllers
+          .add([TextEditingController(), TextEditingController()]);
+    });
+    for (var i = 0; i < _allLanguageConfig.length; i++) {
+      if (_allLanguageConfig[i].l10nPath != null) {
+        _translateOptionControllers[i][0].text =
+            _allLanguageConfig[i].l10nPath!;
+      }
+      if (_allLanguageConfig[i].androidPath != null) {
+        _translateOptionControllers[i][1].text =
+            _allLanguageConfig[i].androidPath!;
+      }
+    }
   }
 
   List<Widget> _getConfigContentList() {
@@ -83,14 +99,15 @@ class _SettingsViewState extends State<SettingsView> {
                               // 移除悬停效果
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) async{
+                              onChanged: (data) async {
                                 setState(() {
                                   _allLanguageConfig[index].willTranslate =
                                       (data == true);
                                 });
-                                await ConfigStore.saveConfig(
-                                  ConfigModel(deeplKey: appDataViewModel.config.deeplKey, targetLanguageConfigList: _allLanguageConfig)
-                                );
+                                await ConfigStore.saveConfig(ConfigModel(
+                                    deeplKey: appDataViewModel.config.deeplKey,
+                                    targetLanguageConfigList:
+                                        _allLanguageConfig));
                               },
                             ),
                             // const
@@ -131,7 +148,13 @@ class _SettingsViewState extends State<SettingsView> {
                             Container(
                               width: 150,
                               height: 20,
-                              child: TextField(),
+                              child: TextField(
+                                controller: _translateOptionControllers[index]
+                                    [0],
+                                decoration: const InputDecoration(
+                                    hintText: "l10n file path"),
+                                style: const TextStyle(fontSize: 12),
+                              ),
                             ),
                             GestureDetector(
                               onTap: () async {
@@ -139,6 +162,8 @@ class _SettingsViewState extends State<SettingsView> {
                                 if (oneL10nPath != null) {
                                   _allLanguageConfig[index].usel10n = true;
                                   _allLanguageConfig[index].l10nPath =
+                                      oneL10nPath;
+                                  _translateOptionControllers[index][0].text =
                                       oneL10nPath;
                                   setState(() {});
                                 }
@@ -169,17 +194,25 @@ class _SettingsViewState extends State<SettingsView> {
                                 });
                               },
                             ),
-                            const SizedBox(
+                            SizedBox(
                               width: 150,
                               height: 30,
-                              child: TextField(),
+                              child: TextField(
+                                controller: _translateOptionControllers[index]
+                                    [1],
+                                decoration: const InputDecoration(
+                                    hintText: "android file path"),
+                                style: const TextStyle(fontSize: 12),
+                              ),
                             ),
                             GestureDetector(
                               onTap: () async {
-                                String? androidPath = await pickFile("arb");
+                                String? androidPath = await pickFile("xml");
                                 if (androidPath != null) {
                                   _allLanguageConfig[index].useAndroid = true;
                                   _allLanguageConfig[index].androidPath =
+                                      androidPath;
+                                  _translateOptionControllers[index][1].text =
                                       androidPath;
                                   setState(() {});
                                 }

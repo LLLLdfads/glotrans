@@ -37,22 +37,24 @@ class _TranslateViewState extends State<TranslateView> {
   }
 
   // 解析词条，开始翻译
-  Future _parseInputStr() async{
+  void _parseInputStrAndTranslate() {
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    try {
-      Map<String, String> sentences = parseInputStr(_textEditingController.text);
-      List<List<String>> res =[];
-      for (var e in appDataViewModel.config.targetLanguageConfigList) {
-        if(e.willTranslate){
-          List<String>? eRes =await translateOneLanguageTexts(e.language, sentences.values.toList(), appDataViewModel.config.deeplKey);
-          if(eRes.isNotEmpty){
-            res.add(eRes);
-          }
-        }
-      }
-    } catch (e) {
-      print(e.toString());
-    }
+    appDataViewModel.currentPageViewIndex = 1;
+    appDataViewModel.startTranslating();
+    // try {
+    //   Map<String, String> sentences = parseInputStr(_textEditingController.text);
+    //   List<List<String>> res =[];
+    //   for (var e in appDataViewModel.config.targetLanguageConfigList) {
+    //     if(e.willTranslate){
+    //       List<String>? eRes =await translateOneLanguageTexts(e.language, sentences.values.toList(), appDataViewModel.config.deeplKey);
+    //       if(eRes.isNotEmpty){
+    //         res.add(eRes);
+    //       }
+    //     }
+    //   }
+    // } catch (e) {
+    //   print(e.toString());
+    // }
   }
 
   @override
@@ -128,7 +130,7 @@ class _TranslateViewState extends State<TranslateView> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: _parseInputStr,
+                    onPressed: _parseInputStrAndTranslate,
                     style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.white70.withAlpha(90)),

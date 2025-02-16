@@ -104,6 +104,10 @@ class _AppState extends State<App> {
     }
   }
 
+  // void _handleNotifier(){
+  //   setState(() {});
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +137,7 @@ class _AppState extends State<App> {
                         shadows: [
                           Shadow(
                             blurRadius: 3.0,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             offset: const Offset(1.0, 1.0),
                           ),
                         ],
@@ -176,6 +180,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = false;
+                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          appDataViewModel.currentPageViewIndex = 0;
                           setState(() {});
                         },
                         child: const Row(
@@ -231,6 +237,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = true;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = false;
+                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          appDataViewModel.currentPageViewIndex = 1;
                           setState(() {});
                         },
                         child: const Row(
@@ -286,6 +294,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = true;
                           _historyBtnClicked = false;
+                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          appDataViewModel.currentPageViewIndex = 2;
                           setState(() {});
                         },
                         child: const Row(
@@ -341,6 +351,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = true;
+                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          appDataViewModel.currentPageViewIndex = 3;
                           setState(() {});
                         },
                         child: const Row(
@@ -349,7 +361,7 @@ class _AppState extends State<App> {
                               width: 20,
                             ),
                             FaIcon(
-                              FontAwesomeIcons.history,
+                              FontAwesomeIcons.clockRotateLeft,
                               color: Color(0xeeDFDFDF),
                             ),
                             SizedBox(
@@ -373,7 +385,17 @@ class _AppState extends State<App> {
             width: 600,
             height: double.infinity,
             color: const Color(0xff448899),
-            child: getViewByClickedBtn(),
+            // child: getViewByClickedBtn(),
+            child: Selector<AppDataViewModel, int>(
+                selector: (_, vm) => vm.currentPageViewIndex,
+                builder: (context, currentPageViewIndex, child) {
+                  return [
+                    const TranslateView(),
+                    const ExportView(),
+                    const SettingsView(),
+                    const HistoryView(),
+                  ][currentPageViewIndex];
+                }),
           ),
         ],
       ),

@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run F",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "noDebug": true,
+            "flutterMode": "release"
+        },
+        {
+            "name": "Debug F",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+        }
+    ]
+}
