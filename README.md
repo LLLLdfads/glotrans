@@ -3,7 +3,7 @@
 A new Flutter project.
 
 ## Getting Started
-
+引入macos_ui,需要打开xcode配置macos deployment target至少是10.14.6，并且根目录的podfile中platform :osx, '10.14.6'
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
