@@ -152,15 +152,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _translateBtnClicked
                           ? Colors.white38
                           : (_translateBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent), // 背景颜色
+                          ? Colors.white10
+                          : Colors.transparent), // 背景颜色
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -209,15 +209,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _exportBtnClicked
                           ? Colors.white38
                           : (_exportBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent),
+                          ? Colors.white10
+                          : Colors.transparent),
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -266,15 +266,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _settingsBtnClicked
                           ? Colors.white38
                           : (_settingsBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent), // 背景颜色
+                          ? Colors.white10
+                          : Colors.transparent), // 背景颜色
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -323,15 +323,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _historyBtnClicked
                           ? Colors.white38
                           : (_historyBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent),
+                          ? Colors.white10
+                          : Colors.transparent),
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
