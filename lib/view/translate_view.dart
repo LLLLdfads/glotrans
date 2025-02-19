@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart' show WidgetStateProperty;
 
 import 'package:dio/dio.dart';
-import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
@@ -131,11 +131,11 @@ class _TranslateViewState extends State<TranslateView> {
                   ElevatedButton(
                     onPressed: _parseInputStrAndTranslate,
                     style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
+                        backgroundColor: WidgetStateProperty.all<Color>(
                             Colors.white70.withAlpha(90)),
-                        elevation: MaterialStateProperty.all<double>(0),
+                        elevation: WidgetStateProperty.all<double>(0),
                         overlayColor:
-                            MaterialStateProperty.all<Color>(Colors.white24)),
+                            WidgetStateProperty.all<Color>(Colors.white24)),
                     child: const Text("开始翻译",
                         style: TextStyle(color: Colors.white, fontSize: 16)),
                   )

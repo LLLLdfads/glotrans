@@ -118,7 +118,7 @@ class _AppState extends State<App> {
           Container(
             width: 200,
             height: double.infinity,
-            color: const Color(0xff347080),
+            color: const Color(0xff212123),
             child: Column(
               children: [
                 const SizedBox(
@@ -390,7 +390,7 @@ class _AppState extends State<App> {
           Container(
             width: 600,
             height: double.infinity,
-            color: const Color(0xff448899),
+            color: const Color(0xff242425),
             // child: getViewByClickedBtn(),
             child: Selector<AppDataViewModel, int>(
                 selector: (_, vm) => vm.currentPageViewIndex,

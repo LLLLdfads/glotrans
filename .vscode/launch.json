@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run F",
+            "name": "Run main",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
@@ -10,7 +10,7 @@
             "flutterMode": "release"
         },
         {
-            "name": "Debug F",
+            "name": "Debug main",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",

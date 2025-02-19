@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/model/config_model.dart';
@@ -67,7 +66,7 @@ class _SettingsViewState extends State<SettingsView> {
             ),
             SizedBox(
                 width: double.infinity,
-                height: 300,
+                height: 350,
                 child: ListView(
                   children: List.generate(_allLanguageConfig.length, (index) {
                     return Column(
@@ -95,7 +94,7 @@ class _SettingsViewState extends State<SettingsView> {
                               checkColor: Colors.white,
                               tristate: true,
                               overlayColor:
-                                  MaterialStateProperty.all(Colors.transparent),
+                                  WidgetStateProperty.all(Colors.transparent),
                               // 移除悬停效果
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
@@ -121,7 +120,7 @@ class _SettingsViewState extends State<SettingsView> {
                               checkColor: Colors.white,
                               tristate: true,
                               overlayColor:
-                                  MaterialStateProperty.all(Colors.transparent),
+                                  WidgetStateProperty.all(Colors.transparent),
                               // 移除悬停效果
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
@@ -153,7 +152,8 @@ class _SettingsViewState extends State<SettingsView> {
                                     [0],
                                 decoration: const InputDecoration(
                                     hintText: "l10n file path"),
-                                style: const TextStyle(fontSize: 12),
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.white),
                               ),
                             ),
                             GestureDetector(
@@ -183,7 +183,7 @@ class _SettingsViewState extends State<SettingsView> {
                               checkColor: Colors.white,
                               tristate: true,
                               overlayColor:
-                                  MaterialStateProperty.all(Colors.transparent),
+                                  WidgetStateProperty.all(Colors.transparent),
                               // 移除悬停效果
                               materialTapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap,
@@ -263,7 +263,7 @@ class _SettingsViewState extends State<SettingsView> {
                           checkColor: Colors.white,
                           tristate: true,
                           overlayColor:
-                              MaterialStateProperty.all(Colors.transparent),
+                              WidgetStateProperty.all(Colors.transparent),
                           // 移除悬停效果
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -287,7 +287,7 @@ class _SettingsViewState extends State<SettingsView> {
                           checkColor: Colors.white,
                           tristate: true,
                           overlayColor:
-                              MaterialStateProperty.all(Colors.transparent),
+                              WidgetStateProperty.all(Colors.transparent),
                           // 移除悬停效果
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -309,7 +309,7 @@ class _SettingsViewState extends State<SettingsView> {
                           checkColor: Colors.white,
                           tristate: true,
                           overlayColor:
-                              MaterialStateProperty.all(Colors.transparent),
+                              WidgetStateProperty.all(Colors.transparent),
                           // 移除悬停效果
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -332,7 +332,7 @@ class _SettingsViewState extends State<SettingsView> {
                           checkColor: Colors.white,
                           tristate: true,
                           overlayColor:
-                              MaterialStateProperty.all(Colors.transparent),
+                              WidgetStateProperty.all(Colors.transparent),
                           // 移除悬停效果
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
