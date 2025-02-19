@@ -36,15 +36,16 @@ class AppDataViewModel extends ChangeNotifier {
       targetLanguageConfigList: []);
 
   // 解析词条，开始翻译
-  Future _parseInputStrAndTranslate() async{
+  Future _parseInputStrAndTranslate() async {
     // appDataViewModel.currentPageViewIndex = 1;
     try {
       Map<String, String> sentences = parseInputStr(currentSentence!);
-      List<List<String>> res =[];
+      List<List<String>> res = [];
       for (var e in config.targetLanguageConfigList) {
-        if(e.willTranslate){
-          List<String>? eRes =await translateOneLanguageTexts(e.language, sentences.values.toList(), config.deeplKey);
-          if(eRes.isNotEmpty){
+        if (e.willTranslate) {
+          List<String>? eRes = await translateOneLanguageTexts(
+              e.language, sentences.values.toList(), config.deeplKey);
+          if (eRes.isNotEmpty) {
             res.add(eRes);
           }
         }

@@ -14,10 +14,12 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final appDocumentDirectory = await path_provider.getApplicationDocumentsDirectory();
+  final appDocumentDirectory =
+      await path_provider.getApplicationDocumentsDirectory();
   Hive.init(appDocumentDirectory.path);
   Hive.registerAdapter(TargetLanguageConfigModelAdapter());
   Hive.registerAdapter(ConfigModelAdapter());
@@ -96,11 +98,11 @@ class _AppState extends State<App> {
     }
   }
 
-  Future _initData() async{
+  Future _initData() async {
     ConfigModel? savedConfig = await ConfigStore.getConfig();
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    if(savedConfig != null){
-      appDataViewModel.config= savedConfig;
+    if (savedConfig != null) {
+      appDataViewModel.config = savedConfig;
     }
   }
 
@@ -152,15 +154,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _translateBtnClicked
                           ? Colors.white38
                           : (_translateBtnHovered
-                          ? Colors.white10
-                          : Colors.transparent), // 背景颜色
+                              ? Colors.white10
+                              : Colors.transparent), // 背景颜色
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -180,7 +182,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          AppDataViewModel appDataViewModel =
+                              context.read<AppDataViewModel>();
                           appDataViewModel.currentPageViewIndex = 0;
                           setState(() {});
                         },
@@ -209,15 +212,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _exportBtnClicked
                           ? Colors.white38
                           : (_exportBtnHovered
-                          ? Colors.white10
-                          : Colors.transparent),
+                              ? Colors.white10
+                              : Colors.transparent),
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -237,7 +240,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = true;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          AppDataViewModel appDataViewModel =
+                              context.read<AppDataViewModel>();
                           appDataViewModel.currentPageViewIndex = 1;
                           setState(() {});
                         },
@@ -266,15 +270,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _settingsBtnClicked
                           ? Colors.white38
                           : (_settingsBtnHovered
-                          ? Colors.white10
-                          : Colors.transparent), // 背景颜色
+                              ? Colors.white10
+                              : Colors.transparent), // 背景颜色
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -294,7 +298,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = true;
                           _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          AppDataViewModel appDataViewModel =
+                              context.read<AppDataViewModel>();
                           appDataViewModel.currentPageViewIndex = 2;
                           setState(() {});
                         },
@@ -323,15 +328,15 @@ class _AppState extends State<App> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: Colors.white10, // 背景颜色
                       color: _historyBtnClicked
                           ? Colors.white38
                           : (_historyBtnHovered
-                          ? Colors.white10
-                          : Colors.transparent),
+                              ? Colors.white10
+                              : Colors.transparent),
                       borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
                     ),
                     height: 50,
@@ -351,7 +356,8 @@ class _AppState extends State<App> {
                           _exportBtnClicked = false;
                           _settingsBtnClicked = false;
                           _historyBtnClicked = true;
-                          AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
+                          AppDataViewModel appDataViewModel =
+                              context.read<AppDataViewModel>();
                           appDataViewModel.currentPageViewIndex = 3;
                           setState(() {});
                         },
