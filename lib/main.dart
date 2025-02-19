@@ -104,11 +104,16 @@ class _AppState extends State<App> {
     if (savedConfig != null) {
       appDataViewModel.config = savedConfig;
     }
+    appDataViewModel.addListener(_handleNotifier);
   }
 
-  // void _handleNotifier(){
-  //   setState(() {});
-  // }
+  void _handleNotifier() {
+    _translateBtnClicked = false;
+    _exportBtnClicked = true;
+    _settingsBtnClicked = false;
+    _historyBtnClicked = false;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {

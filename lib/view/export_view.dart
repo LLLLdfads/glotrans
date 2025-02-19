@@ -90,6 +90,8 @@ class _ExportViewState extends State<ExportView> {
   }
 
   void _handleAppDataVM() {
+    // if (!mounted || context == null) return;
+
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     _translating = appDataViewModel.translating;
     _currentWillTranslateLanguageLength =

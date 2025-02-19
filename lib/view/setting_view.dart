@@ -144,7 +144,7 @@ class _SettingsViewState extends State<SettingsView> {
                                 });
                               },
                             ),
-                            Container(
+                            SizedBox(
                               width: 150,
                               height: 20,
                               child: TextField(

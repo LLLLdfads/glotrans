@@ -27,7 +27,10 @@ class AppDataViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void testNotifyListeners(){
+  void testNotifyListeners() {
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   notifyListeners();
+    // });
     notifyListeners();
   }
 

@@ -38,8 +38,11 @@ class _TranslateViewState extends State<TranslateView> {
   // 解析词条，开始翻译
   void _parseInputStrAndTranslate() {
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    appDataViewModel.currentPageViewIndex = 1;
-    appDataViewModel.startTranslating();
+    appDataViewModel.currentPageViewIndex=1;
+    appDataViewModel.testNotifyListeners();
+    // appDataViewModel.currentPageViewIndex = 1;
+    // appDataViewModel.startTranslating();
+
     // try {
     //   Map<String, String> sentences = parseInputStr(_textEditingController.text);
     //   List<List<String>> res =[];
