@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:glo_trans/model/config_model.dart';
 
@@ -8,18 +10,39 @@ class AppDataViewModel extends ChangeNotifier {
 
   bool translating = false;
   int currentTranslateProgress = 0;
+  Map<String, String> currentkeyValueMap = {};
+  int get currentWillTranslateCount =>
+      config.targetLanguageConfigList.where((e) => e.willTranslate).length;
+  int get willTranslateCount =>
+      config.targetLanguageConfigList.where((e) => e.willTranslate).length *
+      currentkeyValueMap.length;
+  // 翻译耗时
+  int translateTakesTime = 0;
+  Timer? _timer;
+
+  // 翻译结果
+  List<List<String>> translateResult = [];
 
   int currentPageViewIndex = 0;
 
-  void startTranslating() {
+  void startTranslating(Map<String, String> keyValueMap) {
+    currentkeyValueMap = keyValueMap;
     translating = true;
     notifyListeners();
-    _parseInputStrAndTranslate();
+    _translate(keyValueMap);
+    // 开始计时
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      translateTakesTime++;
+      notifyListeners();
+    });
   }
 
   void stopTranslating() {
     translating = false;
     notifyListeners();
+    currentTranslateProgress = 0;
+    _timer?.cancel();
+    translateTakesTime = 0;
   }
 
   void translatedProgress(int progress) {
@@ -28,9 +51,11 @@ class AppDataViewModel extends ChangeNotifier {
   }
 
   void testNotifyListeners() {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   notifyListeners();
-    // });
+    notifyListeners();
+  }
+
+  void switchPage(int index) {
+    currentPageViewIndex = index;
     notifyListeners();
   }
 
@@ -39,22 +64,22 @@ class AppDataViewModel extends ChangeNotifier {
       targetLanguageConfigList: []);
 
   // 解析词条，开始翻译
-  Future _parseInputStrAndTranslate() async {
-    // appDataViewModel.currentPageViewIndex = 1;
-    try {
-      Map<String, String> sentences = parseInputStr(currentSentence!);
-      List<List<String>> res = [];
-      for (var e in config.targetLanguageConfigList) {
-        if (e.willTranslate) {
-          List<String>? eRes = await translateOneLanguageTexts(
-              e.language, sentences.values.toList(), config.deeplKey);
-          if (eRes.isNotEmpty) {
-            res.add(eRes);
-          }
+  Future _translate(Map<String, String> keyValueMap) async {
+    for (var value in keyValueMap.values) {
+      List<String> oneLineRes = [];
+      for (var targetLanguageConfig in config.targetLanguageConfigList) {
+        if (targetLanguageConfig.willTranslate) {
+          String res = await translateOneLanguageTextForDev(
+              targetLanguageConfig.language, value, config.deeplKey);
+          print(res);
+          oneLineRes.add(res);
+          currentTranslateProgress += 1;
+          notifyListeners();
         }
       }
-    } catch (e) {
-      print(e.toString());
+      translateResult.add(oneLineRes);
+      print("翻译完成$value ");
     }
+    stopTranslating();
   }
 }

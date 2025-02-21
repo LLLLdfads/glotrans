@@ -3,10 +3,11 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart' show WidgetStateProperty;
 
 import 'package:dio/dio.dart';
+import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
 
@@ -18,45 +19,38 @@ class TranslateView extends StatefulWidget {
 }
 
 class _TranslateViewState extends State<TranslateView> {
-  // bool _hasResult = false;
-  // bool _inResultView = false;
-
+  late AppDataViewModel _appDataViewModel;
   late final PlutoGridStateManager stateManager;
-
   String? _currentSentence;
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    _currentSentence = appDataViewModel.currentSentence;
+    _appDataViewModel = context.read<AppDataViewModel>();
+    _currentSentence = _appDataViewModel.currentSentence;
     _textEditingController.text = _currentSentence ?? "";
     setState(() {});
   }
 
   // 解析词条，开始翻译
   void _parseInputStrAndTranslate() {
-    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    appDataViewModel.currentPageViewIndex=1;
-    appDataViewModel.testNotifyListeners();
-    // appDataViewModel.currentPageViewIndex = 1;
-    // appDataViewModel.startTranslating();
-
-    // try {
-    //   Map<String, String> sentences = parseInputStr(_textEditingController.text);
-    //   List<List<String>> res =[];
-    //   for (var e in appDataViewModel.config.targetLanguageConfigList) {
-    //     if(e.willTranslate){
-    //       List<String>? eRes =await translateOneLanguageTexts(e.language, sentences.values.toList(), appDataViewModel.config.deeplKey);
-    //       if(eRes.isNotEmpty){
-    //         res.add(eRes);
-    //       }
-    //     }
-    //   }
-    // } catch (e) {
-    //   print(e.toString());
-    // }
+    // 如果输入框为空或者无法解析，则不进行翻译
+    if (_textEditingController.text.isEmpty) {
+      showToast("请输入");
+      return;
+    }
+    // 如果无法解析输入的文本，也需要有提示
+    // 解析的键值对
+    Map<String, String> keyValueMap = {};
+    try {
+      keyValueMap = parseInputStr(_textEditingController.text);
+    } catch (e) {
+      showToast("格式错误请确认");
+      return;
+    }
+    _appDataViewModel.switchPage(1);
+    _appDataViewModel.startTranslating(keyValueMap);
   }
 
   @override
@@ -71,13 +65,6 @@ class _TranslateViewState extends State<TranslateView> {
               SizedBox(
                 width: 20,
               ),
-              // Icon(Icons.arrow_back_ios,
-              //     color: _inResultView ? Colors.white54 : Colors.white10),
-              // const SizedBox(
-              //   width: 20,
-              // ),
-              // Icon(Icons.arrow_forward_ios,
-              //     color: _hasResult ? Colors.white54 : Colors.white10),
             ],
           ),
         ),

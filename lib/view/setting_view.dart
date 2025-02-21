@@ -54,10 +54,10 @@ class _SettingsViewState extends State<SettingsView> {
         padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Column(
           children: [
-            const SizedBox(
+            SizedBox(
               width: double.infinity,
               child: Text(
-                "翻译选项",
+                "翻译选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
                 style: TextStyle(color: Colors.white),
               ),
             ),

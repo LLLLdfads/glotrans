@@ -11,6 +11,7 @@ import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:hive/hive.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -52,14 +53,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AppDataViewModel>(
             create: (_) => AppDataViewModel())
       ],
-      child: MaterialApp(
+      child: OKToast(
+          child: MaterialApp(
         title: 'Flutter EasyLoading',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         home: const App(),
         builder: EasyLoading.init(),
-      ),
+      )),
     );
   }
 }
@@ -72,18 +74,13 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  bool _translateBtnHovered = false;
-  bool _translateBtnClicked = true;
-  bool _exportBtnHovered = false;
-  bool _exportBtnClicked = false;
-  bool _settingsBtnHovered = false;
-  bool _settingsBtnClicked = false;
-  bool _historyBtnHovered = false;
-  bool _historyBtnClicked = false;
+  int _currentOptionIndex = 0;
+  late AppDataViewModel _appDataViewModel;
 
   @override
   void initState() {
     super.initState();
+    _appDataViewModel = context.read<AppDataViewModel>();
     _initConfig();
     _initData();
   }
@@ -108,11 +105,65 @@ class _AppState extends State<App> {
   }
 
   void _handleNotifier() {
-    _translateBtnClicked = false;
-    _exportBtnClicked = true;
-    _settingsBtnClicked = false;
-    _historyBtnClicked = false;
+    _currentOptionIndex = _appDataViewModel.currentPageViewIndex;
     setState(() {});
+  }
+
+  void _handleOptionItemTap(int index) {
+    setState(() {
+      _currentOptionIndex = index;
+    });
+    _appDataViewModel.currentPageViewIndex = index;
+  }
+
+  Widget _buildHeader() {
+    return SizedBox(
+      height: 100,
+      width: double.infinity,
+      child: Center(
+        child: Text(
+          "Glo Trans",
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white70,
+            letterSpacing: 1.5,
+            shadows: [
+              Shadow(
+                blurRadius: 3.0,
+                color: Colors.black.withValues(alpha: 0.3),
+                offset: const Offset(1.0, 1.0),
+              ),
+            ],
+            decoration: TextDecoration.none,
+            decorationStyle: TextDecorationStyle.solid,
+            decorationColor: const Color(0xFF3498DB),
+            fontFamily: 'Roboto',
+          ),
+        ),
+      ),
+      // color: Colors.red,
+    );
+  }
+
+  Widget _buildContent() {
+    return Container(
+      width: 600,
+      height: double.infinity,
+      color: const Color.fromARGB(255, 39, 39, 41),
+      // child: getViewByClickedBtn(),
+      child: Selector<AppDataViewModel, int>(
+          selector: (_, vm) => vm.currentPageViewIndex,
+          builder: (context, currentPageViewIndex, child) {
+            return [
+              const TranslateView(),
+              const ExportView(),
+              const SettingsView(),
+              const HistoryView(),
+            ][currentPageViewIndex];
+          }),
+    );
   }
 
   @override
@@ -123,305 +174,123 @@ class _AppState extends State<App> {
           Container(
             width: 200,
             height: double.infinity,
-            color: const Color(0xff212123),
+            color: const Color.fromARGB(255, 30, 30, 32),
             child: Column(
               children: [
                 const SizedBox(
                   height: 25,
                 ),
-                SizedBox(
-                  height: 100,
-                  width: double.infinity,
-                  child: Center(
-                    child: Text(
-                      "Glo Trans",
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white70,
-                        letterSpacing: 1.5,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 3.0,
-                            color: Colors.black.withValues(alpha: 0.3),
-                            offset: const Offset(1.0, 1.0),
-                          ),
-                        ],
-                        decoration: TextDecoration.none,
-                        decorationStyle: TextDecorationStyle.solid,
-                        decorationColor: const Color(0xFF3498DB),
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ),
-                  // color: Colors.red,
+                _buildHeader(),
+                OptionItem(
+                  title: "词条翻译",
+                  selected: _currentOptionIndex == 0,
+                  icon: FontAwesomeIcons.language,
+                  onTap: _handleOptionItemTap,
+                  index: 0,
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      // color: Colors.white10, // 背景颜色
-                      color: _translateBtnClicked
-                          ? Colors.white38
-                          : (_translateBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent), // 背景颜色
-                      borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
-                    ),
-                    height: 50,
-                    width: double.infinity,
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        _translateBtnHovered = true;
-                        setState(() {});
-                      },
-                      onExit: (_) {
-                        _translateBtnHovered = false;
-                        setState(() {});
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          _translateBtnClicked = true;
-                          _exportBtnClicked = false;
-                          _settingsBtnClicked = false;
-                          _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel =
-                              context.read<AppDataViewModel>();
-                          appDataViewModel.currentPageViewIndex = 0;
-                          setState(() {});
-                        },
-                        child: const Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.language,
-                              color: Color(0xeeDFDFDF),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "词条翻译",
-                              style: TextStyle(
-                                  fontSize: 20, color: Color(0xeeDFDFDF)),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                OptionItem(
+                  title: "导入项目",
+                  selected: _currentOptionIndex == 1,
+                  icon: FontAwesomeIcons.fileImport,
+                  onTap: _handleOptionItemTap,
+                  index: 1,
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      // color: Colors.white10, // 背景颜色
-                      color: _exportBtnClicked
-                          ? Colors.white38
-                          : (_exportBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent),
-                      borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
-                    ),
-                    height: 50,
-                    width: double.infinity,
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        _exportBtnHovered = true;
-                        setState(() {});
-                      },
-                      onExit: (_) {
-                        _exportBtnHovered = false;
-                        setState(() {});
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          _translateBtnClicked = false;
-                          _exportBtnClicked = true;
-                          _settingsBtnClicked = false;
-                          _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel =
-                              context.read<AppDataViewModel>();
-                          appDataViewModel.currentPageViewIndex = 1;
-                          setState(() {});
-                        },
-                        child: const Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.fileExport,
-                              color: Color(0xeeDFDFDF),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "导入项目",
-                              style: TextStyle(
-                                  fontSize: 20, color: Color(0xeeDFDFDF)),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                OptionItem(
+                  title: "翻译设置",
+                  selected: _currentOptionIndex == 2,
+                  icon: FontAwesomeIcons.gear,
+                  onTap: _handleOptionItemTap,
+                  index: 2,
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      // color: Colors.white10, // 背景颜色
-                      color: _settingsBtnClicked
-                          ? Colors.white38
-                          : (_settingsBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent), // 背景颜色
-                      borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
-                    ),
-                    height: 50,
-                    width: double.infinity,
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        _settingsBtnHovered = true;
-                        setState(() {});
-                      },
-                      onExit: (_) {
-                        _settingsBtnHovered = false;
-                        setState(() {});
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          _translateBtnClicked = false;
-                          _exportBtnClicked = false;
-                          _settingsBtnClicked = true;
-                          _historyBtnClicked = false;
-                          AppDataViewModel appDataViewModel =
-                              context.read<AppDataViewModel>();
-                          appDataViewModel.currentPageViewIndex = 2;
-                          setState(() {});
-                        },
-                        child: const Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.gear,
-                              color: Color(0xeeDFDFDF),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "翻译设置",
-                              style: TextStyle(
-                                  fontSize: 20, color: Color(0xeeDFDFDF)),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      // color: Colors.white10, // 背景颜色
-                      color: _historyBtnClicked
-                          ? Colors.white38
-                          : (_historyBtnHovered
-                              ? Colors.white10
-                              : Colors.transparent),
-                      borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
-                    ),
-                    height: 50,
-                    width: double.infinity,
-                    child: MouseRegion(
-                      onEnter: (_) {
-                        _historyBtnHovered = true;
-                        setState(() {});
-                      },
-                      onExit: (_) {
-                        _historyBtnHovered = false;
-                        setState(() {});
-                      },
-                      child: GestureDetector(
-                        onTap: () {
-                          _translateBtnClicked = false;
-                          _exportBtnClicked = false;
-                          _settingsBtnClicked = false;
-                          _historyBtnClicked = true;
-                          AppDataViewModel appDataViewModel =
-                              context.read<AppDataViewModel>();
-                          appDataViewModel.currentPageViewIndex = 3;
-                          setState(() {});
-                        },
-                        child: const Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.clockRotateLeft,
-                              color: Color(0xeeDFDFDF),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "翻译历史",
-                              style: TextStyle(
-                                  fontSize: 20, color: Color(0xeeDFDFDF)),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                OptionItem(
+                  title: "翻译历史",
+                  selected: _currentOptionIndex == 3,
+                  icon: FontAwesomeIcons.clockRotateLeft,
+                  onTap: _handleOptionItemTap,
+                  index: 3,
                 ),
               ],
             ),
           ),
-          Container(
-            width: 600,
-            height: double.infinity,
-            color: const Color(0xff242425),
-            // child: getViewByClickedBtn(),
-            child: Selector<AppDataViewModel, int>(
-                selector: (_, vm) => vm.currentPageViewIndex,
-                builder: (context, currentPageViewIndex, child) {
-                  return [
-                    const TranslateView(),
-                    const ExportView(),
-                    const SettingsView(),
-                    const HistoryView(),
-                  ][currentPageViewIndex];
-                }),
-          ),
+          _buildContent(),
         ],
       ),
     );
   }
+}
 
-  Widget getViewByClickedBtn() {
-    if (_settingsBtnClicked) {
-      return const SettingsView();
-    } else if (_translateBtnClicked) {
-      return const TranslateView();
-    } else if (_historyBtnClicked) {
-      return const HistoryView();
-    } else {
-      return const ExportView();
-    }
+class OptionItem extends StatefulWidget {
+  const OptionItem({
+    super.key,
+    required this.title,
+    required this.selected,
+    required this.icon,
+    required this.onTap,
+    required this.index,
+  });
+
+  final IconData icon;
+  final String title;
+  final bool selected;
+  final Function(int) onTap;
+  final int index;
+
+  @override
+  State<OptionItem> createState() => _OptionItemState();
+}
+
+class _OptionItemState extends State<OptionItem> {
+  bool _areaIn = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        widget.onTap(widget.index);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        child: Container(
+          decoration: BoxDecoration(
+            // color: Colors.white10, // 背景颜色
+            color: widget.selected
+                ? Colors.white38
+                : (_areaIn ? Colors.white10 : Colors.transparent),
+            borderRadius: BorderRadius.circular(5), // 圆角半径，数值越大越圆滑
+          ),
+          height: 50,
+          width: double.infinity,
+          child: MouseRegion(
+            onEnter: (_) {
+              _areaIn = true;
+              setState(() {});
+            },
+            onExit: (_) {
+              _areaIn = false;
+              setState(() {});
+            },
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                ),
+                FaIcon(
+                  widget.icon,
+                  color: const Color(0xeeDFDFDF),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Text(
+                  widget.title,
+                  style:
+                      const TextStyle(fontSize: 20, color: Color(0xeeDFDFDF)),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

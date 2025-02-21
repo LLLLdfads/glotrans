@@ -28,18 +28,18 @@ Future<String?> pickFile(String fileCate) async {
   }
 }
 
-// 翻译一种语言（多个文本）
-Future<List<String>> translateOneLanguageTexts(String language,List<String> texts,String key) async {
+// 翻译一种语言（多个文本），暂时不用了，展示不好看
+Future<List<String>> translateOneLanguageTexts(
+    String language, List<String> texts, String key) async {
   var dio = Dio();
   var url = AppConst.deeplurl;
-  List<String> res =[];
+  List<String> res = [];
   try {
     var response = await dio.post(
       url,
       options: Options(
         headers: {
-          'Authorization':
-          'DeepL-Auth-Key $key',
+          'Authorization': 'DeepL-Auth-Key $key',
           'Content-Type': 'application/json',
         },
       ),
@@ -62,4 +62,49 @@ Future<List<String>> translateOneLanguageTexts(String language,List<String> text
     print('发生错误：$e');
   }
   return res;
+}
+
+// 翻译一种语言（单个文本）
+Future<String> translateOneLanguageText(
+    String language, String text, String key) async {
+  var dio = Dio();
+  var url = AppConst.deeplurl;
+  String res = "";
+  try {
+    var response = await dio.post(
+      url,
+      options: Options(
+        headers: {
+          'Authorization': 'DeepL-Auth-Key $key',
+          'Content-Type': 'application/json',
+        },
+      ),
+      data: {
+        'target_lang': language,
+        'text': [text],
+        'show_billed_characters': true,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('翻译成功：${response.data}');
+      // response.data['translations'].forEach((e) {
+      //   res.add(e.toString());
+      // });
+      res = response.data['translations'][0].toString();
+    } else {
+      print('翻译失败：${response.statusCode}');
+    }
+    return res;
+  } catch (e) {
+    print('发生错误：$e');
+    return "error";
+  }
+}
+
+// 翻译一种语言（单个文本）,不调用接口，直接返回
+Future<String> translateOneLanguageTextForDev(
+    String language, String text, String key) async {
+  await Future.delayed(const Duration(milliseconds: 100));
+  return "$language -$text";
 }

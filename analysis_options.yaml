@@ -10,6 +10,7 @@
 analyzer:
   errors:
     avoid_function_literals_in_foreach_calls: ignore
+    avoid_print: ignore
     depend_on_referenced_packages: ignore
 include: package:flutter_lints/flutter.yaml
 

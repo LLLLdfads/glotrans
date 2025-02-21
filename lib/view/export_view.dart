@@ -11,153 +11,188 @@ class ExportView extends StatefulWidget {
 }
 
 class _ExportViewState extends State<ExportView> {
-  final List<PlutoColumn> columns = <PlutoColumn>[
-    PlutoColumn(
-      titleTextAlign: PlutoColumnTextAlign.center,
-      enableContextMenu: false,
-      title: 'Id',
-      field: 'id',
-      type: PlutoColumnType.text(),
-    ),
-    PlutoColumn(
-      titleTextAlign: PlutoColumnTextAlign.center,
-      enableContextMenu: false,
-      title: 'Name',
-      field: 'name',
-      type: PlutoColumnType.text(),
-    ),
-    PlutoColumn(
-      titleTextAlign: PlutoColumnTextAlign.center,
-      enableContextMenu: false,
-      title: 'Age',
-      field: 'age',
-      type: PlutoColumnType.number(),
-    ),
-    PlutoColumn(
-      titleTextAlign: PlutoColumnTextAlign.center,
-      enableContextMenu: false,
-      title: 'Joined',
-      field: 'joined',
-      type: PlutoColumnType.date(),
-    ),
-    PlutoColumn(
-      titleTextAlign: PlutoColumnTextAlign.center,
-      enableContextMenu: false,
-      title: 'Working time',
-      field: 'working_time',
-      type: PlutoColumnType.time(),
-    ),
+  late AppDataViewModel _appDataViewModel;
+  PlutoGridStateManager? stateManager;
+
+  final List<PlutoColumn> header = <PlutoColumn>[
+    // PlutoColumn(
+    //   width: 70,
+    //   textAlign: PlutoColumnTextAlign.center,
+    //   titleTextAlign: PlutoColumnTextAlign.center,
+    //   enableContextMenu: false,
+    //   title: 'index',
+    //   field: 'index',
+    //   type: PlutoColumnType.text(),
+    // ),
+    // PlutoColumn(
+    //   titleTextAlign: PlutoColumnTextAlign.center,
+    //   enableContextMenu: false,
+    //   title: 'Name',
+    //   field: 'name',
+    //   type: PlutoColumnType.text(),
+    // ),
+    // PlutoColumn(
+    //   titleTextAlign: PlutoColumnTextAlign.center,
+    //   enableContextMenu: false,
+    //   title: '简体中文',
+    //   field: 'zh',
+    //   type: PlutoColumnType.text(),
+    // ),
+    // PlutoColumn(
+    //   titleTextAlign: PlutoColumnTextAlign.center,
+    //   enableContextMenu: false,
+    //   title: '繁体中文',
+    //   field: 'tw',
+    //   type: PlutoColumnType.text(),
+    // ),
+    // PlutoColumn(
+    //   titleTextAlign: PlutoColumnTextAlign.center,
+    //   enableContextMenu: false,
+    //   title: '英语',
+    //   field: 'en',
+    //   type: PlutoColumnType.text(),
+    // ),
   ];
 
   final List<PlutoRow> rows = [
-    PlutoRow(
-      cells: {
-        'id': PlutoCell(value: 'user1'),
-        'name': PlutoCell(value: 'Mike'),
-        'age': PlutoCell(value: 20),
-        'joined': PlutoCell(value: '2021-01-01'),
-        'working_time': PlutoCell(value: '09:00'),
-      },
-    ),
-    PlutoRow(
-      cells: {
-        'id': PlutoCell(value: 'user2'),
-        'name': PlutoCell(value: 'Jack'),
-        'age': PlutoCell(value: 25),
-        'joined': PlutoCell(value: '2021-02-01'),
-        'working_time': PlutoCell(value: '10:00'),
-      },
-    ),
-    PlutoRow(
-      cells: {
-        'id': PlutoCell(value: 'user3'),
-        'name': PlutoCell(value: 'Suzi'),
-        'age': PlutoCell(value: 40),
-        'joined': PlutoCell(value: '2021-03-01'),
-        'working_time': PlutoCell(value: '11:00'),
-      },
-    ),
+    // PlutoRow(
+    //   cells: {
+    //     'index': PlutoCell(value: '0'),
+    //     'name': PlutoCell(value: '1'),
+    //     'zh': PlutoCell(value: 20),
+    //     'tw': PlutoCell(value: '2021-01-01'),
+    //     'en': PlutoCell(value: '09:00'),
+    //   },
+    // ),
+    // PlutoRow(
+    //   cells: {
+    //     'index': PlutoCell(value: '1'),
+    //     'name': PlutoCell(value: '2'),
+    //     'zh': PlutoCell(value: 20),
+    //     'tw': PlutoCell(value: '2021-01-01'),
+    //     'en': PlutoCell(value: '09:00'),
+    //   },
+    // ),
+    // PlutoRow(
+    //   cells: {
+    //     'index': PlutoCell(value: '2'),
+    //     'name': PlutoCell(value: '3'),
+    //     'zh': PlutoCell(value: 20),
+    //     'tw': PlutoCell(value: '2021-01-01'),
+    //     'en': PlutoCell(value: '09:00'),
+    //   },
+    // ),
   ];
-
-  bool _translating = false;
-  int _currentWillTranslateLanguageLength = 0;
 
   @override
   void initState() {
     super.initState();
-    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    appDataViewModel.addListener(_handleAppDataVM);
+    _appDataViewModel = context.read<AppDataViewModel>();
+    _appDataViewModel.addListener(_handleAppDataVM);
+    _initTable();
+  }
+
+  /// 初始化表格的表头
+  void _initTable() {
+    header.add(PlutoColumn(
+      width: 70,
+      textAlign: PlutoColumnTextAlign.center,
+      titleTextAlign: PlutoColumnTextAlign.center,
+      title: 'index',
+      field: 'index',
+      type: PlutoColumnType.text(),
+    ));
+    header.add(PlutoColumn(
+      width: 150,
+      textAlign: PlutoColumnTextAlign.center,
+      titleTextAlign: PlutoColumnTextAlign.center,
+      title: 'key',
+      field: 'key',
+      type: PlutoColumnType.text(),
+    ));
+    for (var e in _appDataViewModel.config.targetLanguageConfigList
+        .where((e) => e.willTranslate)
+        .toList()) {
+      header.add(PlutoColumn(
+        titleTextAlign: PlutoColumnTextAlign.center,
+        enableContextMenu: false,
+        title: "${e.country}-${e.language}",
+        field: e.language,
+        type: PlutoColumnType.text(),
+      ));
+    }
   }
 
   void _handleAppDataVM() {
-    // if (!mounted || context == null) return;
-
-    AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    _translating = appDataViewModel.translating;
-    _currentWillTranslateLanguageLength =
-        appDataViewModel.config.targetLanguageConfigList.length;
+    if (!mounted) return; // 不加这行将导致找不到上下文
     setState(() {});
+  }
+
+  void _addRow() {
+    stateManager!.appendRows([
+      PlutoRow(
+        cells: {
+          'id': PlutoCell(value: 'user4'),
+          'name': PlutoCell(value: 'Alice'),
+          'age': PlutoCell(value: 30),
+          'joined': PlutoCell(value: '2021-04-01'),
+          'working_time': PlutoCell(value: '12:00'),
+        },
+      )
+    ]);
+    // 减2的目的是为了防止回弹
+    stateManager!.moveScrollByRow(
+        PlutoMoveDirection.down, stateManager!.rows.length - 2);
+  }
+
+  Widget _buildProgressBar() {
+    var vm = context.watch<AppDataViewModel>();
+    if (!vm.translating) {
+      return const SizedBox();
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ClipRRect(
+          // 边界半径（`borderRadius`）属性，圆角的边界半径。
+          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+          child: SizedBox(
+            width: 250,
+            height: 10,
+            child: LinearProgressIndicator(
+              value: vm.currentTranslateProgress / vm.willTranslateCount,
+              backgroundColor: const Color.fromARGB(255, 7, 8, 8),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color.fromARGB(255, 35, 235, 71)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          "${vm.currentTranslateProgress}/${vm.willTranslateCount} takes ${vm.translateTakesTime} s",
+          style: const TextStyle(color: Colors.white70, fontSize: 16),
+        )
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ClipRRect(
-              // 边界半径（`borderRadius`）属性，圆角的边界半径。
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              child: SizedBox(
-                  height: 15,
-                  width: 300,
-                  child: _translating
-                      ? Selector<AppDataViewModel, int>(
-                          selector: (_, vm) => vm.currentTranslateProgress,
-                          builder: (context, currentTranslateProgress, child) {
-                            return LinearProgressIndicator(
-                              value: currentTranslateProgress /
-                                  _currentWillTranslateLanguageLength,
-                              backgroundColor: const Color(0xff436E7E),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.lightGreen),
-                            );
-                          })
-                      : Container()
-                  // child: LinearProgressIndicator(
-                  //   value: 1 / 20,
-                  //   backgroundColor: Color(0xff436E7E),
-                  //   valueColor: AlwaysStoppedAnimation<Color>(
-                  //       Colors.lightGreen),
-                  // ),
-                  ),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            Text(
-              "${(1 / 2 * 100).toStringAsFixed(1)}%",
-              style: const TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            const Text(
-              "takes 10s",
-              style: TextStyle(color: Colors.white70, fontSize: 16),
-            )
-          ],
+        const SizedBox(
+          height: 10,
         ),
+        _buildProgressBar(),
         Expanded(
             child: Padding(
           padding:
               const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
           child: PlutoGrid(
-            columns: columns,
+            columns: header,
             rows: rows,
             onLoaded: (PlutoGridOnLoadedEvent event) {
-              // stateManager = event.stateManager;
+              stateManager = event.stateManager;
             },
             onChanged: (PlutoGridOnChangedEvent event) {
               print(event);
@@ -184,16 +219,17 @@ class _ExportViewState extends State<ExportView> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    AppDataViewModel appDataViewModel =
-                        context.read<AppDataViewModel>();
-                    appDataViewModel.testNotifyListeners();
+                    _addRow();
+                    // AppDataViewModel appDataViewModel =
+                    //     context.read<AppDataViewModel>();
+                    // appDataViewModel.testNotifyListeners();
                   },
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: MaterialStateProperty.all<double>(0),
+                      elevation: WidgetStateProperty.all<double>(0),
                       overlayColor:
-                          MaterialStateProperty.all<Color>(Colors.white24)),
+                          WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导入项目",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
@@ -203,11 +239,11 @@ class _ExportViewState extends State<ExportView> {
                 ElevatedButton(
                   onPressed: () {},
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: MaterialStateProperty.all<double>(0),
+                      elevation: WidgetStateProperty.all<double>(0),
                       overlayColor:
-                          MaterialStateProperty.all<Color>(Colors.white24)),
+                          WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导出表格",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 )
