@@ -51,6 +51,7 @@ class _TranslateViewState extends State<TranslateView> {
     }
     _appDataViewModel.switchPage(1);
     _appDataViewModel.startTranslating(keyValueMap);
+    _appDataViewModel.keyValueMap = keyValueMap;
   }
 
   @override
@@ -121,11 +122,11 @@ class _TranslateViewState extends State<TranslateView> {
                   ElevatedButton(
                     onPressed: _parseInputStrAndTranslate,
                     style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all<Color>(
+                        backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.white70.withAlpha(90)),
-                        elevation: WidgetStateProperty.all<double>(0),
+                        elevation: MaterialStateProperty.all<double>(0),
                         overlayColor:
-                            WidgetStateProperty.all<Color>(Colors.white24)),
+                            MaterialStateProperty.all<Color>(Colors.white24)),
                     child: const Text("开始翻译",
                         style: TextStyle(color: Colors.white, fontSize: 16)),
                   )

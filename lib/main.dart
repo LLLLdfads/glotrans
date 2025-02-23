@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/model/translate_result_model.dart';
 import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/view/export_view.dart';
 import 'package:glo_trans/view/history_view.dart';
@@ -24,7 +25,8 @@ void main() async {
   Hive.init(appDocumentDirectory.path);
   Hive.registerAdapter(TargetLanguageConfigModelAdapter());
   Hive.registerAdapter(ConfigModelAdapter());
-
+  Hive.registerAdapter(TranslateResultModelAdapter());
+  Hive.registerAdapter(TranslateResultModelListAdapter());
   await windowManager.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
@@ -83,6 +85,7 @@ class _AppState extends State<App> {
     _appDataViewModel = context.read<AppDataViewModel>();
     _initConfig();
     _initData();
+    _initTranslateResultList();
   }
 
   void _initConfig() {
@@ -93,6 +96,10 @@ class _AppState extends State<App> {
               country: countryLanguage.split(" ")[0],
               language: countryLanguage.split(" ")[1]));
     }
+  }
+
+  void _initTranslateResultList() {
+    _appDataViewModel.getTranslateResultList();
   }
 
   Future _initData() async {
@@ -132,7 +139,7 @@ class _AppState extends State<App> {
             shadows: [
               Shadow(
                 blurRadius: 3.0,
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withAlpha(30),
                 offset: const Offset(1.0, 1.0),
               ),
             ],

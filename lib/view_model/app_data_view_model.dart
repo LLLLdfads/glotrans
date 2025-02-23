@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/model/translate_result_model.dart';
+import 'package:glo_trans/service/translate_result_list_store.dart';
 
 import '../utils.dart';
 
@@ -25,6 +27,8 @@ class AppDataViewModel extends ChangeNotifier {
 
   // 翻译结果
   List<List<String>> translateResult = [];
+
+  Map<String, String> keyValueMap = {};
 
   int currentPageViewIndex = 0;
 
@@ -96,5 +100,34 @@ class AppDataViewModel extends ChangeNotifier {
       notifyListeners();
     }
     stopTranslating();
+    saveTranslateResult();
+  }
+
+  // 保存翻译结果
+  void saveTranslateResult() async {
+    TranslateResultModelList translateResultModelList =
+        await getTranslateResultList();
+    TranslateResultModel translateResultModel = TranslateResultModel(
+        time: DateTime.now().toString(),
+        header: ["index", "key", ...keyValueMap.keys.toList()],
+        rows: translateResult);
+    TranslateResultListStore.saveTranslateResultList(
+        translateResultModelList.add(translateResultModel));
+  }
+
+  // 翻译历史结果
+  TranslateResultModelList? translateResultModelList;
+
+  // 获取翻译历史结果
+  Future<TranslateResultModelList> getTranslateResultList() async {
+    translateResultModelList =
+        await TranslateResultListStore.getTranslateResultList();
+    if (translateResultModelList != null) {
+      print(
+          "translateResultModelList: ${translateResultModelList!.translateResultList.length}");
+      return translateResultModelList!;
+    }
+    print("translateResultModelList: null");
+    return TranslateResultModelList(translateResultList: []);
   }
 }

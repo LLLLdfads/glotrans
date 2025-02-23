@@ -171,8 +171,7 @@ class _ExportViewState extends State<ExportView> {
             child: LinearProgressIndicator(
               value: vm.currentTranslateProgress / vm.willTranslateCount,
               backgroundColor: const Color.fromARGB(255, 7, 8, 8),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color.fromARGB(255, 35, 235, 71)),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
             ),
           ),
         ),
@@ -253,11 +252,11 @@ class _ExportViewState extends State<ExportView> {
                     // appDataViewModel.testNotifyListeners();
                   },
                   style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
+                      backgroundColor: MaterialStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: WidgetStateProperty.all<double>(0),
+                      elevation: MaterialStateProperty.all<double>(0),
                       overlayColor:
-                          WidgetStateProperty.all<Color>(Colors.white24)),
+                          MaterialStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导入项目",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
@@ -269,11 +268,11 @@ class _ExportViewState extends State<ExportView> {
                     await exportToExcel(_stateManager!);
                   },
                   style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
+                      backgroundColor: MaterialStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: WidgetStateProperty.all<double>(0),
+                      elevation: MaterialStateProperty.all<double>(0),
                       overlayColor:
-                          WidgetStateProperty.all<Color>(Colors.white24)),
+                          MaterialStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导出表格",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 )

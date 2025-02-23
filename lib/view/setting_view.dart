@@ -240,7 +240,7 @@ class _SettingsViewState extends State<SettingsView> {
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
+                            MaterialStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
@@ -262,7 +262,7 @@ class _SettingsViewState extends State<SettingsView> {
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
+                            MaterialStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
@@ -288,7 +288,7 @@ class _SettingsViewState extends State<SettingsView> {
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
+                            MaterialStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
