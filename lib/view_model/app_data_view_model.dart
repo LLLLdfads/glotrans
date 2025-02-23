@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:glo_trans/model/config_model.dart';
+import 'package:glo_trans/model/target_language_config_model.dart';
 
 import '../utils.dart';
 
@@ -16,6 +17,8 @@ class AppDataViewModel extends ChangeNotifier {
   int get willTranslateCount =>
       config.targetLanguageConfigList.where((e) => e.willTranslate).length *
       currentkeyValueMap.length;
+  List<TargetLanguageConfigModel> get currentWillTranslateLanguageList =>
+      config.targetLanguageConfigList.where((e) => e.willTranslate).toList();
   // 翻译耗时
   int translateTakesTime = 0;
   Timer? _timer;
@@ -28,6 +31,12 @@ class AppDataViewModel extends ChangeNotifier {
   void startTranslating(Map<String, String> keyValueMap) {
     currentkeyValueMap = keyValueMap;
     translating = true;
+    translateResult = [];
+    int index = 0;
+    keyValueMap.forEach((key, value) {
+      translateResult.add([index.toString(), key]);
+      index++;
+    });
     notifyListeners();
     _translate(keyValueMap);
     // 开始计时
@@ -65,20 +74,26 @@ class AppDataViewModel extends ChangeNotifier {
 
   // 解析词条，开始翻译
   Future _translate(Map<String, String> keyValueMap) async {
+    int index = 0;
     for (var value in keyValueMap.values) {
       List<String> oneLineRes = [];
-      for (var targetLanguageConfig in config.targetLanguageConfigList) {
-        if (targetLanguageConfig.willTranslate) {
-          String res = await translateOneLanguageTextForDev(
-              targetLanguageConfig.language, value, config.deeplKey);
-          print(res);
-          oneLineRes.add(res);
-          currentTranslateProgress += 1;
-          notifyListeners();
-        }
+      for (var targetLanguageConfig in currentWillTranslateLanguageList) {
+        String res = await translateOneLanguageTextForDev(
+            targetLanguageConfig.language, value, config.deeplKey);
+        print(res);
+        oneLineRes.add(res);
+        currentTranslateProgress += 1;
+        notifyListeners();
       }
-      translateResult.add(oneLineRes);
+      translateResult[index] = [
+        index.toString(),
+        keyValueMap.keys.toList()[index],
+        ...oneLineRes
+      ];
+      print("translateResult: ${translateResult.length}");
+      index++;
       print("翻译完成$value ");
+      notifyListeners();
     }
     stopTranslating();
   }

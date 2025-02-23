@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,8 @@ class ExportView extends StatefulWidget {
 
 class _ExportViewState extends State<ExportView> {
   late AppDataViewModel _appDataViewModel;
-  PlutoGridStateManager? stateManager;
+  PlutoGridStateManager? _stateManager;
+  List<String> _headerStringList = [];
 
   final List<PlutoColumn> header = <PlutoColumn>[
     // PlutoColumn(
@@ -121,28 +123,35 @@ class _ExportViewState extends State<ExportView> {
         type: PlutoColumnType.text(),
       ));
     }
+    header.forEach((e) {
+      _headerStringList.add(e.field);
+    });
   }
 
   void _handleAppDataVM() {
     if (!mounted) return; // 不加这行将导致找不到上下文
-    setState(() {});
+    _addRow(_appDataViewModel.translateResult);
   }
 
-  void _addRow() {
-    stateManager!.appendRows([
-      PlutoRow(
-        cells: {
-          'id': PlutoCell(value: 'user4'),
-          'name': PlutoCell(value: 'Alice'),
-          'age': PlutoCell(value: 30),
-          'joined': PlutoCell(value: '2021-04-01'),
-          'working_time': PlutoCell(value: '12:00'),
-        },
-      )
-    ]);
-    // 减2的目的是为了防止回弹
-    stateManager!.moveScrollByRow(
-        PlutoMoveDirection.down, stateManager!.rows.length - 2);
+  void _addRow(List<List<String>> translateResult) {
+    // 创建一个新的临时列表
+    final newRows = <PlutoRow>[];
+
+    for (List<String> row in translateResult) {
+      if (row.length != _headerStringList.length) {
+        row.addAll(List.filled(_headerStringList.length - row.length, ''));
+      }
+      newRows.add(PlutoRow(
+          cells: Map.fromIterables(
+              _headerStringList, row.map((e) => PlutoCell(value: e)))));
+    }
+
+    // 先清空现有行
+    _stateManager!.removeAllRows();
+    // 然后添加新行
+    _stateManager!.appendRows(newRows);
+    _stateManager!.moveScrollByRow(
+        PlutoMoveDirection.down, _stateManager!.rows.length - 2);
   }
 
   Widget _buildProgressBar() {
@@ -192,7 +201,26 @@ class _ExportViewState extends State<ExportView> {
             columns: header,
             rows: rows,
             onLoaded: (PlutoGridOnLoadedEvent event) {
-              stateManager = event.stateManager;
+              _stateManager = event.stateManager;
+              // 初始化表格
+              final newRows = <PlutoRow>[];
+
+              for (List<String> row in _appDataViewModel.translateResult) {
+                if (row.length != _headerStringList.length) {
+                  row.addAll(
+                      List.filled(_headerStringList.length - row.length, ''));
+                }
+                newRows.add(PlutoRow(
+                    cells: Map.fromIterables(_headerStringList,
+                        row.map((e) => PlutoCell(value: e)))));
+              }
+
+              // 先清空现有行
+              _stateManager!.removeAllRows();
+              // 然后添加新行
+              _stateManager!.appendRows(newRows);
+              _stateManager!.moveScrollByRow(
+                  PlutoMoveDirection.down, _stateManager!.rows.length - 2);
             },
             onChanged: (PlutoGridOnChangedEvent event) {
               print(event);
@@ -219,7 +247,7 @@ class _ExportViewState extends State<ExportView> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    _addRow();
+                    // _addRow();
                     // AppDataViewModel appDataViewModel =
                     //     context.read<AppDataViewModel>();
                     // appDataViewModel.testNotifyListeners();
@@ -237,7 +265,9 @@ class _ExportViewState extends State<ExportView> {
                   width: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await exportToExcel(_stateManager!);
+                  },
                   style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),

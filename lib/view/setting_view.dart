@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:glo_trans/common/common.dart';
 import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/service/config_store.dart';
@@ -50,372 +51,334 @@ class _SettingsViewState extends State<SettingsView> {
   List<Widget> _getConfigContentList() {
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     return [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        child: Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Text(
-                "翻译选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            SizedBox(
-                width: double.infinity,
-                height: 350,
-                child: ListView(
-                  children: List.generate(_allLanguageConfig.length, (index) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.transparent,
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                                color: Colors.white10,
-                              ),
-                              child: Text(
-                                "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 12),
-                              ),
-                            ),
-                            Checkbox(
-                              value: _allLanguageConfig[index].willTranslate,
-                              activeColor: Colors.lightGreen,
-                              checkColor: Colors.white,
-                              tristate: true,
-                              overlayColor:
-                                  WidgetStateProperty.all(Colors.transparent),
-                              // 移除悬停效果
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) async {
-                                setState(() {
-                                  _allLanguageConfig[index].willTranslate =
-                                      (data == true);
-                                });
-                                await ConfigStore.saveConfig(ConfigModel(
-                                    deeplKey: appDataViewModel.config.deeplKey,
-                                    targetLanguageConfigList:
-                                        _allLanguageConfig));
-                              },
-                            ),
-                            // const
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _allLanguageConfig[index].usel10n,
-                              activeColor: Colors.lightGreen,
-                              checkColor: Colors.white,
-                              tristate: true,
-                              overlayColor:
-                                  WidgetStateProperty.all(Colors.transparent),
-                              // 移除悬停效果
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) {
-                                if (data == true) {
-                                  if (_allLanguageConfig[index].l10nPath ==
-                                      null) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (_) {
-                                          return const AlertDialog(
-                                            title: Text("请选择l10n文件"),
-                                          );
-                                        });
-                                    return;
-                                  }
-                                }
-                                setState(() {
-                                  _allLanguageConfig[index].usel10n =
-                                      (data == true);
-                                });
-                              },
-                            ),
-                            SizedBox(
-                              width: 150,
-                              height: 20,
-                              child: TextField(
-                                controller: _translateOptionControllers[index]
-                                    [0],
-                                decoration: const InputDecoration(
-                                    hintText: "l10n file path"),
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.white),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                String? oneL10nPath = await pickFile("arb");
-                                if (oneL10nPath != null) {
-                                  _allLanguageConfig[index].usel10n = true;
-                                  _allLanguageConfig[index].l10nPath =
-                                      oneL10nPath;
-                                  _translateOptionControllers[index][0].text =
-                                      oneL10nPath;
-                                  setState(() {});
-                                }
-                              },
-                              child: const FaIcon(
-                                size: 20,
-                                FontAwesomeIcons.file,
-                                color: Color(0xff347080),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Checkbox(
-                              value: _allLanguageConfig[index].useAndroid,
-                              activeColor: Colors.lightGreen,
-                              checkColor: Colors.white,
-                              tristate: true,
-                              overlayColor:
-                                  WidgetStateProperty.all(Colors.transparent),
-                              // 移除悬停效果
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              onChanged: (data) {
-                                setState(() {
-                                  _allLanguageConfig[index].useAndroid =
-                                      (data == true);
-                                });
-                              },
-                            ),
-                            SizedBox(
-                              width: 150,
-                              height: 30,
-                              child: TextField(
-                                controller: _translateOptionControllers[index]
-                                    [1],
-                                decoration: const InputDecoration(
-                                    hintText: "android file path"),
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                String? androidPath = await pickFile("xml");
-                                if (androidPath != null) {
-                                  _allLanguageConfig[index].useAndroid = true;
-                                  _allLanguageConfig[index].androidPath =
-                                      androidPath;
-                                  _translateOptionControllers[index][1].text =
-                                      androidPath;
-                                  setState(() {});
-                                }
-                              },
-                              child: const FaIcon(
-                                size: 20,
-                                FontAwesomeIcons.file,
-                                color: Color(0xff347080),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        )
-                      ],
-                    );
-                  }),
-                )),
-          ],
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        child: Column(
-          children: [
-            const SizedBox(
-              width: double.infinity,
-              child: Text(
-                "导出设置",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 100,
-                child: Column(
+      _buildSettingItemContent(
+        title:
+            "翻译选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
+        child: SizedBox(
+            width: double.infinity,
+            height: 350,
+            child: ListView(
+              children: List.generate(_allLanguageConfig.length, (index) {
+                return Column(
                   children: [
                     Row(
                       children: [
-                        Text("前"),
-                        Checkbox(
-                          value: appDataViewModel.config.insertBeforeL10nFlag,
-                          activeColor: Colors.lightGreen,
-                          checkColor: Colors.white,
-                          tristate: true,
-                          overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          // 移除悬停效果
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          onChanged: (data) {
-                            setState(() {
-                              appDataViewModel.config.insertBeforeL10nFlag =
-                                  !appDataViewModel.config.insertBeforeL10nFlag;
-                            });
-                          },
-                        ),
-                        SizedBox(
-                          width: 300,
-                          child: TextField(
-                            decoration: InputDecoration(hintText: "l10n翻译文件标识"),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.transparent,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Text(
+                            "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 12),
                           ),
                         ),
-                        const Text("后"),
-                        Checkbox(
-                          value: !appDataViewModel.config.insertBeforeL10nFlag,
-                          activeColor: Colors.lightGreen,
-                          checkColor: Colors.white,
-                          tristate: true,
-                          overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          // 移除悬停效果
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          onChanged: (data) {
+                        buildCheckbox(
+                          value: _allLanguageConfig[index].willTranslate,
+                          onChanged: (data) async {
                             setState(() {
-                              appDataViewModel.config.insertBeforeL10nFlag =
-                                  !appDataViewModel.config.insertBeforeL10nFlag;
+                              _allLanguageConfig[index].willTranslate =
+                                  (data == true);
                             });
+                            await ConfigStore.saveConfig(ConfigModel(
+                                deeplKey: appDataViewModel.config.deeplKey,
+                                targetLanguageConfigList: _allLanguageConfig));
                           },
                         ),
+                        // const
                       ],
                     ),
                     Row(
                       children: [
-                        Text("前"),
-                        Checkbox(
-                          value: _checked,
-                          activeColor: Colors.lightGreen,
-                          checkColor: Colors.white,
-                          tristate: true,
-                          overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          // 移除悬停效果
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                        buildCheckbox(
+                          value: _allLanguageConfig[index].usel10n,
                           onChanged: (data) {
+                            if (data == true) {
+                              if (_allLanguageConfig[index].l10nPath == null) {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return const AlertDialog(
+                                        title: Text("请选择l10n文件"),
+                                      );
+                                    });
+                                return;
+                              }
+                            }
                             setState(() {
-                              _checked = !_checked;
+                              _allLanguageConfig[index].usel10n =
+                                  (data == true);
                             });
                           },
                         ),
                         SizedBox(
-                          width: 300,
-                          child: TextField(
-                            decoration: InputDecoration(hintText: "安卓翻译文件标识"),
+                          width: 140,
+                          height: 20,
+                          child: buildInputField(
+                            controller: _translateOptionControllers[index][0],
+                            hintText: "l10n file path",
+                            context: context,
+                            onChanged: (value) {
+                              _allLanguageConfig[index].l10nPath = value;
+                              setState(() {});
+                            },
                           ),
                         ),
-                        Text("后"),
-                        Checkbox(
-                          value: _checked,
-                          activeColor: Colors.lightGreen,
-                          checkColor: Colors.white,
-                          tristate: true,
-                          overlayColor:
-                              WidgetStateProperty.all(Colors.transparent),
-                          // 移除悬停效果
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            String? oneL10nPath = await pickFile("arb");
+                            if (oneL10nPath != null) {
+                              _allLanguageConfig[index].usel10n = true;
+                              _allLanguageConfig[index].l10nPath = oneL10nPath;
+                              _translateOptionControllers[index][0].text =
+                                  oneL10nPath;
+                              setState(() {});
+                            }
+                          },
+                          child: const FaIcon(
+                            size: 20,
+                            FontAwesomeIcons.file,
+                            color: Color(0xff347080),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        buildCheckbox(
+                          value: _allLanguageConfig[index].useAndroid,
                           onChanged: (data) {
                             setState(() {
-                              _checked = !_checked;
+                              _allLanguageConfig[index].useAndroid =
+                                  (data == true);
                             });
                           },
                         ),
+                        SizedBox(
+                          width: 140,
+                          height: 20,
+                          child: buildInputField(
+                            controller: _translateOptionControllers[index][0],
+                            hintText: "android  file path",
+                            context: context,
+                            onChanged: (value) {
+                              _allLanguageConfig[index].l10nPath = value;
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            String? androidPath = await pickFile("xml");
+                            if (androidPath != null) {
+                              _allLanguageConfig[index].useAndroid = true;
+                              _allLanguageConfig[index].androidPath =
+                                  androidPath;
+                              _translateOptionControllers[index][1].text =
+                                  androidPath;
+                              setState(() {});
+                            }
+                          },
+                          child: const FaIcon(
+                            size: 20,
+                            FontAwesomeIcons.file,
+                            color: Color(0xff347080),
+                          ),
+                        )
                       ],
                     ),
                   ],
-                ),
-              ),
-            )
-          ],
-        ),
+                );
+              }),
+            )),
       ),
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 0),
-        child: Row(
-          children: [
-            const SizedBox(
-              child: Text(
-                "系统语言",
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      _buildSettingItemContent(
+          title: "导出设置",
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 100,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("前"),
+                      buildCheckbox(
+                        value: appDataViewModel.config.insertBeforeL10nFlag,
+                        onChanged: (data) {
+                          setState(() {
+                            appDataViewModel.config.insertBeforeL10nFlag =
+                                !appDataViewModel.config.insertBeforeL10nFlag;
+                          });
+                        },
+                      ),
+                      SizedBox(
+                        width: 100,
+                        height: 20,
+                        child: buildInputField(
+                          controller: _translateOptionControllers[0][0],
+                          hintText: "l10n翻译文件标识",
+                          context: context,
+                          onChanged: (value) {},
+                        ),
+                      ),
+                      const Text("后"),
+                      Checkbox(
+                        value: !appDataViewModel.config.insertBeforeL10nFlag,
+                        activeColor: Colors.lightGreen,
+                        checkColor: Colors.white,
+                        tristate: true,
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        // 移除悬停效果
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onChanged: (data) {
+                          setState(() {
+                            appDataViewModel.config.insertBeforeL10nFlag =
+                                !appDataViewModel.config.insertBeforeL10nFlag;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("前"),
+                      Checkbox(
+                        value: _checked,
+                        activeColor: Colors.lightGreen,
+                        checkColor: Colors.white,
+                        tristate: true,
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        // 移除悬停效果
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onChanged: (data) {
+                          setState(() {
+                            _checked = !_checked;
+                          });
+                        },
+                      ),
+                      SizedBox(
+                        width: 100,
+                        height: 20,
+                        child: buildInputField(
+                          controller: _translateOptionControllers[0][0],
+                          hintText: "l10n翻译文件标识",
+                          context: context,
+                          onChanged: (value) {},
+                        ),
+                      ),
+                      Text("后"),
+                      Checkbox(
+                        value: _checked,
+                        activeColor: Colors.lightGreen,
+                        checkColor: Colors.white,
+                        tristate: true,
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
+                        // 移除悬停效果
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onChanged: (data) {
+                          setState(() {
+                            _checked = !_checked;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              width: 300,
-              height: 50,
-              child: DropdownMenu<String>(
-                menuHeight: 400,
-                initialSelection:
-                    ['简体', '繁体', 'English', 'Franch', '...'].first,
-                onSelected: (_) {},
-                dropdownMenuEntries: ['简体', '繁体', 'English', 'Franch', '...']
-                    .map((e) => DropdownMenuEntry<String>(value: e, label: e))
-                    .toList(),
-              ),
-            )
-          ],
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        child: Row(
-          children: [
-            Text(
-              "deepl密钥",
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.white),
+          )),
+      _buildSettingItemContent(
+        title: "系统语言",
+        child: SizedBox(
+          width: double.infinity,
+          height: 90,
+          child: Center(
+            child: DropdownMenu<String>(
+              menuHeight: 400,
+              initialSelection: ['简体', '繁体', 'English', 'Franch', '...'].first,
+              onSelected: (_) {},
+              dropdownMenuEntries: ['简体', '繁体', 'English', 'Franch', '...']
+                  .map((e) => DropdownMenuEntry<String>(value: e, label: e))
+                  .toList(),
             ),
-            const SizedBox(
-              height: 30,
-              width: 200,
-              child: TextField(
-                obscureText: true,
-              ),
-            )
-          ],
+          ),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        child: Row(
-          children: [
-            Text(
-              "关于",
-              style: const TextStyle(color: Colors.white),
+      _buildSettingItemContent(
+          title: "deepl密钥",
+          child: SizedBox(
+            height: 20,
+            width: 200,
+            child: buildInputField(
+              controller: _translateOptionControllers[0][0],
+              hintText: "deepl密钥",
+              context: context,
+              onChanged: (value) {},
             ),
-            const SizedBox(
-              height: 30,
-              width: 200,
-              child: TextField(
-                obscureText: true,
-              ),
-            )
-          ],
-        ),
-      ),
+          )),
+      _buildSettingItemContent(title: "关于", child: _buildAboutItemContent()),
     ];
+  }
+
+  _buildAboutItemContent() {
+    return const Column(
+      children: [
+        Text(
+          "版本号：1.0.0",
+          style: TextStyle(color: Colors.white),
+        ),
+        Text(
+          "作者：glo_trans",
+          style: TextStyle(color: Colors.white),
+        ),
+        Text(
+          "邮箱：glo_trans@163.com",
+          style: TextStyle(color: Colors.white),
+        ),
+        Text(
+          "github：https://github.com/glo_trans",
+          style: TextStyle(color: Colors.white),
+        ),
+        Text(
+          "QQ：1234567890",
+          style: TextStyle(color: Colors.white),
+        ),
+      ],
+    );
+  }
+
+  _buildSettingItemContent({required String title, required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20, top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.white)),
+          const SizedBox(
+            height: 20,
+          ),
+          Center(
+            child: child,
+          ),
+        ],
+      ),
+    );
   }
 
   void _scrollToItem(int index) {

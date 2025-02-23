@@ -250,7 +250,9 @@ class _OptionItemState extends State<OptionItem> {
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             // color: Colors.white10, // 背景颜色
             color: widget.selected
@@ -274,9 +276,12 @@ class _OptionItemState extends State<OptionItem> {
                 const SizedBox(
                   width: 20,
                 ),
-                FaIcon(
-                  widget.icon,
-                  color: const Color(0xeeDFDFDF),
+                SizedBox(
+                  width: 25,
+                  child: FaIcon(
+                    widget.icon,
+                    color: const Color(0xeeDFDFDF),
+                  ),
                 ),
                 const SizedBox(
                   width: 10,

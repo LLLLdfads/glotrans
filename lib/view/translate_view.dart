@@ -95,21 +95,21 @@ class _TranslateViewState extends State<TranslateView> {
                               keyboardType: TextInputType.multiline,
                               expands: true,
                               maxLines: null,
-                              cursorColor: Colors.white24,
+                              cursorColor: Colors.blue,
                               style: const TextStyle(
                                   color: Colors.white, fontSize: 18),
                               decoration: const InputDecoration(
                                 hintText:
-                                    '输入翻译文本键值对，如：\n\"text_hello_world\": \"你好，世界\",\n\"text_china\": \"中国\",\n...',
+                                    '输入翻译文本键值对，如：\n"text_hello_world": "你好，世界",\n"text_china": "中国",\n...',
                                 hintStyle: TextStyle(
                                     color: Colors.white24, fontSize: 18),
                                 enabledBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xff347080)), // 未聚焦时下划线的颜色
+                                      color: Colors.white24), // 未聚焦时下划线的颜色
                                 ),
                                 focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Colors.white24), // 聚焦时下划线的颜色
+                                      color: Colors.blue), // 聚焦时下划线的颜色
                                 ),
                               ),
                             ),

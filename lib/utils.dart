@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:glo_trans/app_const.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 
 /// 将输入的json文本解析成map键值对
 Map<String, String> parseInputStr(String inputStr) {
@@ -107,4 +111,44 @@ Future<String> translateOneLanguageTextForDev(
     String language, String text, String key) async {
   await Future.delayed(const Duration(milliseconds: 100));
   return "$language -$text";
+}
+
+Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
+  // 创建一个新的 Excel 文件
+  var excel = Excel.createExcel();
+
+  // 获取当前表格的 Sheet
+  var sheet = excel['Sheet1'];
+
+  // 添加表头
+  for (var i = 0; i < stateManager.columns.length; i++) {
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
+      ..value = stateManager.columns[i].title;
+  }
+
+  // 添加数据行
+  for (var rowIndex = 0; rowIndex < stateManager.rows.length; rowIndex++) {
+    var row = stateManager.rows[rowIndex];
+    for (var colIndex = 0; colIndex < stateManager.columns.length; colIndex++) {
+      var cell = row.cells[stateManager.columns[colIndex].field];
+      sheet.cell(CellIndex.indexByColumnRow(
+          columnIndex: colIndex, rowIndex: rowIndex + 1))
+        ..value = cell?.value.toString();
+    }
+  }
+
+  // 保存文件
+  var fileBytes = excel.save();
+  if (fileBytes != null) {
+    // 使用 file_picker 选择保存路径
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: '保存 Excel 文件',
+      fileName: 'exported_data.xlsx',
+    );
+
+    if (outputFile != null) {
+      // 写入文件
+      await File(outputFile).writeAsBytes(fileBytes);
+    }
+  }
 }
