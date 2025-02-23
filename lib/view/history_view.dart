@@ -42,34 +42,35 @@ class _HistoryViewState extends State<HistoryView> {
                           width: 100,
                           height: 100,
                           // 这里显示翻译时间，key，value
-                          child: Column(
-                            children: [
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                translateResultModelList
-                                    .translateResultList[index].time
-                                    .substring(0, 19),
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 16,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 20, left: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  translateResultModelList
+                                      .translateResultList[index].time
+                                      .substring(0, 19),
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                translateResultModelList
-                                    .translateResultList[index].rows
-                                    .map((e) => e[1])
-                                    .join(","),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                                const SizedBox(
+                                  height: 10,
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  translateResultModelList
+                                      .translateResultList[index].rows
+                                      .map((e) => e[1])
+                                      .join(","),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )),
                   );
