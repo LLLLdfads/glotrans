@@ -227,9 +227,10 @@ class _ExportViewState extends State<ExportView> {
             configuration: const PlutoGridConfiguration(
               style: PlutoGridStyleConfig(
                 iconColor: Colors.transparent,
-                gridBackgroundColor: Colors.white38,
-                oddRowColor: Colors.white60,
-                borderColor: Colors.white70,
+                gridBackgroundColor: Color.fromARGB(97, 255, 255, 255),
+                oddRowColor: Color.fromARGB(44, 116, 170, 192),
+                evenRowColor: Color.fromARGB(194, 224, 234, 238),
+                borderColor: Color.fromARGB(255, 255, 255, 255),
                 gridBorderColor: Colors.transparent,
                 gridBorderRadius: BorderRadius.all(Radius.circular(5.0)),
               ),
