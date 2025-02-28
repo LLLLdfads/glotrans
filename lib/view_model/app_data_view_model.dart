@@ -32,6 +32,14 @@ class AppDataViewModel extends ChangeNotifier {
 
   int currentPageViewIndex = 0;
 
+  Locale _locale = const Locale('zh', 'CN');
+  Locale get locale => _locale;
+
+  set locale(Locale value) {
+    _locale = value;
+    notifyListeners();
+  }
+
   void startTranslating(Map<String, String> keyValueMap) {
     currentkeyValueMap = keyValueMap;
     translating = true;

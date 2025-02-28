@@ -54,6 +54,8 @@ dependencies:
   # excel
   excel: ^2.0.1
 
+  flutter_localizations:
+    sdk: flutter
 #  初始化简便：hive_flutter 提供了一个便捷的方法来初始化 Hive，尤其是在处理 Flutter 应用中的异步初始化时特别有用。通过 Hive.initFlutter() 方法，可以自动选择合适的存储位置，无需手动调用平台特定的路径获取方法（如 path_provider）。
 #  Widget 绑定：该插件确保了在 Flutter 应用生命周期内正确地初始化和关闭 Hive。这意味着您不需要手动管理 Hive 的初始化和关闭过程，减少了样板代码并降低了出错的可能性。
 #  支持Flutter的StateManagement解决方案：虽然这不是 hive_flutter 的直接功能，但通过更好地与 Flutter 的集成，它使得将 Hive 与各种状态管理技术（如 Provider、Riverpod 或者 Bloc）结合使用更加容易，从而更高效地管理应用状态。
@@ -120,3 +122,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_intl:
+  enabled: true

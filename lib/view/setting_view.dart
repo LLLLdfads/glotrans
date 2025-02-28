@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/common/common.dart';
+import 'package:glo_trans/generated/l10n.dart';
 import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/service/config_store.dart';
@@ -22,7 +23,7 @@ class _SettingsViewState extends State<SettingsView> {
   bool _checked = true;
   List<TargetLanguageConfigModel> _allLanguageConfig = [];
   final ItemScrollController itemScrollController = ItemScrollController();
-  final List<String> _settingItems = ["翻译选项", "导出设置", "系统语言", "deepl密钥", "关于"];
+  final List<String> _settingItems = ["翻译选项", "导出设置", "系统设置", "deepl密钥", "关于"];
   int _currentIndex = 0;
   // 翻译选项的controller
   final List<List<TextEditingController>> _translateOptionControllers = [];
@@ -304,20 +305,41 @@ class _SettingsViewState extends State<SettingsView> {
             ),
           )),
       _buildSettingItemContent(
-        title: "系统语言",
-        child: SizedBox(
-          width: double.infinity,
-          height: 90,
-          child: Center(
-            child: DropdownMenu<String>(
-              menuHeight: 400,
-              initialSelection: ['简体', '繁体', 'English', 'Franch', '...'].first,
-              onSelected: (_) {},
-              dropdownMenuEntries: ['简体', '繁体', 'English', 'Franch', '...']
-                  .map((e) => DropdownMenuEntry<String>(value: e, label: e))
-                  .toList(),
+        title: "系统设置",
+        child: Column(
+          children: [
+            Center(
+              child: DropdownMenu<String>(
+                menuHeight: 400,
+                initialSelection: ['中文'].first,
+                onSelected: (value) {
+                  context.read<AppDataViewModel>().locale =
+                      Locale(value == "中文" ? "zh" : "en");
+                },
+                dropdownMenuEntries: ['中文', '英文']
+                    .map((e) => DropdownMenuEntry<String>(value: e, label: e))
+                    .toList(),
+              ),
             ),
-          ),
+            const SizedBox(
+              height: 10,
+            ),
+            Center(
+              child: DropdownMenu<String>(
+                menuHeight: 400,
+                initialSelection: [
+                  '暗色',
+                ].first,
+                onSelected: (_) {
+                  // final themeProvider = Provider.of<ThemeProvider>(context);
+                  // themeProvider.toggleTheme(); // 切换主题
+                },
+                dropdownMenuEntries: ['暗色', '亮色']
+                    .map((e) => DropdownMenuEntry<String>(value: e, label: e))
+                    .toList(),
+              ),
+            ),
+          ],
         ),
       ),
       _buildSettingItemContent(
