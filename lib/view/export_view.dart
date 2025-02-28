@@ -14,7 +14,7 @@ class ExportView extends StatefulWidget {
 class _ExportViewState extends State<ExportView> {
   late AppDataViewModel _appDataViewModel;
   PlutoGridStateManager? _stateManager;
-  List<String> _headerStringList = [];
+  final List<String> _headerStringList = [];
 
   final List<PlutoColumn> header = <PlutoColumn>[
     // PlutoColumn(
@@ -253,11 +253,10 @@ class _ExportViewState extends State<ExportView> {
                     // appDataViewModel.testNotifyListeners();
                   },
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: MaterialStateProperty.all<double>(0),
-                      overlayColor:
-                          MaterialStateProperty.all<Color>(Colors.white24)),
+                      elevation: WidgetStateProperty.all<double>(0),
+                      overlayColor: WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导入项目",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
@@ -269,11 +268,10 @@ class _ExportViewState extends State<ExportView> {
                     await exportToExcel(_stateManager!);
                   },
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
-                      elevation: MaterialStateProperty.all<double>(0),
-                      overlayColor:
-                          MaterialStateProperty.all<Color>(Colors.white24)),
+                      elevation: WidgetStateProperty.all<double>(0),
+                      overlayColor: WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导出表格",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 )

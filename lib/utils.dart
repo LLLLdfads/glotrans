@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
@@ -30,6 +29,7 @@ Future<String?> pickFile(String fileCate) async {
   } catch (e) {
     print(e);
   }
+  return null;
 }
 
 // 翻译一种语言（多个文本），暂时不用了，展示不好看
@@ -123,7 +123,7 @@ Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
   // 添加表头
   for (var i = 0; i < stateManager.columns.length; i++) {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-      ..value = stateManager.columns[i].title;
+      .value = stateManager.columns[i].title;
   }
 
   // 添加数据行
@@ -133,7 +133,7 @@ Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
       var cell = row.cells[stateManager.columns[colIndex].field];
       sheet.cell(CellIndex.indexByColumnRow(
           columnIndex: colIndex, rowIndex: rowIndex + 1))
-        ..value = cell?.value.toString();
+        .value = cell?.value.toString();
     }
   }
 

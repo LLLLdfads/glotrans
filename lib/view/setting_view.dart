@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/common/common.dart';
-import 'package:glo_trans/generated/l10n.dart';
 import 'package:glo_trans/model/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/service/config_store.dart';
@@ -214,7 +213,7 @@ class _SettingsViewState extends State<SettingsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("前"),
+                      const Text("前"),
                       buildCheckbox(
                         value: appDataViewModel.config.insertBeforeL10nFlag,
                         onChanged: (data) {
@@ -241,7 +240,7 @@ class _SettingsViewState extends State<SettingsView> {
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            MaterialStateProperty.all(Colors.transparent),
+                            WidgetStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
@@ -256,14 +255,14 @@ class _SettingsViewState extends State<SettingsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("前"),
+                      const Text("前"),
                       Checkbox(
                         value: _checked,
                         activeColor: Colors.lightGreen,
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            MaterialStateProperty.all(Colors.transparent),
+                            WidgetStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
@@ -282,14 +281,14 @@ class _SettingsViewState extends State<SettingsView> {
                           onChanged: (value) {},
                         ),
                       ),
-                      Text("后"),
+                      const Text("后"),
                       Checkbox(
                         value: _checked,
                         activeColor: Colors.lightGreen,
                         checkColor: Colors.white,
                         tristate: true,
                         overlayColor:
-                            MaterialStateProperty.all(Colors.transparent),
+                            WidgetStateProperty.all(Colors.transparent),
                         // 移除悬停效果
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {

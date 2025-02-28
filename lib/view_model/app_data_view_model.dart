@@ -117,7 +117,7 @@ class AppDataViewModel extends ChangeNotifier {
         await getTranslateResultList();
     TranslateResultModel translateResultModel = TranslateResultModel(
         time: DateTime.now().toString(),
-        header: ["index", "key", ...keyValueMap.keys.toList()],
+        header: ["index", "key", ...keyValueMap.keys],
         rows: translateResult);
     TranslateResultListStore.saveTranslateResultList(
         translateResultModelList.add(translateResultModel));

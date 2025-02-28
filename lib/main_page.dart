@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/generated/l10n.dart';
@@ -12,7 +10,6 @@ import 'package:glo_trans/view/history_view.dart';
 import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
-import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
@@ -52,6 +49,7 @@ class _MainPageState extends State<MainPage> {
 
   Future _initData() async {
     ConfigModel? savedConfig = await ConfigStore.getConfig();
+    if (!mounted) return;
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     if (savedConfig != null) {
       appDataViewModel.config = savedConfig;

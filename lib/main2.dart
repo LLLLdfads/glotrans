@@ -48,21 +48,25 @@ class _HState extends State<H> {
               ? Text(_configJsonData.toString())
               : Container(),
           ElevatedButton(onPressed: _startTranslate, child: const Text("开始翻译")),
-          Row(children: [
-            ClipRRect(
-              // 边界半径（`borderRadius`）属性，圆角的边界半径。
-              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-              child: SizedBox(
-                height: 20,width: 300,
-                child: LinearProgressIndicator(
-                  value: _currentProgress,
-                  backgroundColor: Color(0xffFFE3E3),
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xffFF4964)),
+          Row(
+            children: [
+              ClipRRect(
+                // 边界半径（`borderRadius`）属性，圆角的边界半径。
+                borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                child: SizedBox(
+                  height: 20,
+                  width: 300,
+                  child: LinearProgressIndicator(
+                    value: _currentProgress,
+                    backgroundColor: const Color(0xffFFE3E3),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Color(0xffFF4964)),
+                  ),
                 ),
               ),
-            ),
-            Text("${(_currentProgress*100).toStringAsFixed(1)}%")
-          ],)
+              Text("${(_currentProgress * 100).toStringAsFixed(1)}%")
+            ],
+          )
         ],
       ),
     );
@@ -85,8 +89,6 @@ class _HState extends State<H> {
     }
   }
 
-
-
   void _parseJsonFile() async {
     File file = File(_configJosnFilePath!);
     String jsonString = await file.readAsString();
@@ -94,7 +96,8 @@ class _HState extends State<H> {
     print("读取的 JSON 数据: $_configJsonData");
     setState(() {});
   }
-  Future<void> _startTranslate()async{
+
+  Future<void> _startTranslate() async {
     if (_isolate != null) {
       _isolate!.kill(priority: Isolate.immediate);
       _isolate = null;
@@ -109,14 +112,14 @@ class _HState extends State<H> {
       });
     });
   }
-
 }
+
 void _translate(SendPort sendPort) {
   double currentProgress = 0.0;
   Timer.periodic(const Duration(milliseconds: 100), (timer) {
-    if(currentProgress <= 1){
-      currentProgress+=0.001;
-    }else{
+    if (currentProgress <= 1) {
+      currentProgress += 0.001;
+    } else {
       currentProgress = 0.0;
     }
     sendPort.send(currentProgress);

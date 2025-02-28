@@ -122,11 +122,11 @@ class _TranslateViewState extends State<TranslateView> {
                   ElevatedButton(
                     onPressed: _parseInputStrAndTranslate,
                     style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
+                        backgroundColor: WidgetStateProperty.all<Color>(
                             Colors.white70.withAlpha(90)),
-                        elevation: MaterialStateProperty.all<double>(0),
+                        elevation: WidgetStateProperty.all<double>(0),
                         overlayColor:
-                            MaterialStateProperty.all<Color>(Colors.white24)),
+                            WidgetStateProperty.all<Color>(Colors.white24)),
                     child: const Text("开始翻译",
                         style: TextStyle(color: Colors.white, fontSize: 16)),
                   )
@@ -151,8 +151,8 @@ class _HState extends State<H> {
   String? _configJosnFilePath;
   Map<String, dynamic>? _configJsonData;
   double _translatedLanguage = 0;
-  List<String> _texts = ["一杯敬故乡", "一杯敬过往", "唤醒我的善良温柔了寒窗"];
-  List<String> _targetLanguage = [
+  final List<String> _texts = ["一杯敬故乡", "一杯敬过往", "唤醒我的善良温柔了寒窗"];
+  final List<String> _targetLanguage = [
     "ZH-HANS",
     "ZH-HANT",
     "EN-US",
@@ -204,7 +204,7 @@ class _HState extends State<H> {
                 width: 300,
                 child: LinearProgressIndicator(
                   value: _translatedLanguage / _targetLanguage.length,
-                  backgroundColor: Color(0xffFFE3E3),
+                  backgroundColor: const Color(0xffFFE3E3),
                   valueColor:
                       const AlwaysStoppedAnimation<Color>(Color(0xffFF4964)),
                 ),

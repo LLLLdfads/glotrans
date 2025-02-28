@@ -56,7 +56,7 @@ Widget buildCheckbox(
     value: value,
     activeColor: Colors.blue,
     checkColor: Colors.white,
-    overlayColor: MaterialStateProperty.all(Colors.transparent),
+    overlayColor: WidgetStateProperty.all(Colors.transparent),
     // 移除悬停效果
     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     onChanged: onChanged,
