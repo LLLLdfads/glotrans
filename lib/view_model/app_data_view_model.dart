@@ -1,4 +1,5 @@
 import 'dart:async';
+// import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:glo_trans/model/config_model.dart';
@@ -93,6 +94,7 @@ class AppDataViewModel extends ChangeNotifier {
         String res = await translateOneLanguageTextForDev(
             targetLanguageConfig.language, value, config.deeplKey);
         print(res);
+        // oneLineRes.add(jsonDecode(res)["translations"][0]["text"]);
         oneLineRes.add(res);
         currentTranslateProgress += 1;
         notifyListeners();
@@ -121,6 +123,12 @@ class AppDataViewModel extends ChangeNotifier {
         rows: translateResult);
     TranslateResultListStore.saveTranslateResultList(
         translateResultModelList.add(translateResultModel));
+  }
+
+  // 导入excel，替换当前的表格数据值
+  void importExcelReplace(List<List<String>> excelData) {
+    translateResult = excelData;
+    notifyListeners();
   }
 
   // 翻译历史结果

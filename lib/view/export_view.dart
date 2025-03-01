@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
@@ -130,7 +133,43 @@ class _ExportViewState extends State<ExportView> {
 
   void _handleAppDataVM() {
     if (!mounted) return; // 不加这行将导致找不到上下文
-    _addRow(_appDataViewModel.translateResult);
+    if (_appDataViewModel.translating) {
+      _addRow(_appDataViewModel.translateResult);
+    } else {
+      // 将表格的数据应用
+      _applyTableData(_appDataViewModel.translateResult);
+    }
+  }
+
+  // 将table数据应用到表格中
+  void _applyTableData(List<List<String>> rows) {
+    // 将原先表格的header删除
+    _stateManager!.removeColumns(_stateManager!.columns);
+    // 将table数据的第一行作为header
+    List<PlutoColumn> newHeader = [];
+    rows.first.forEach((e) {
+      newHeader.add(PlutoColumn(
+        titleTextAlign: PlutoColumnTextAlign.center,
+        enableContextMenu: false,
+        title: e,
+        field: e,
+        type: PlutoColumnType.text(),
+      ));
+    });
+    // 添加header
+    for (int i = 0; i < newHeader.length; i++) {
+      _stateManager!.insertColumns(i, [newHeader[i]]);
+    }
+    _stateManager!.removeAllRows();
+    // 将table数据应用到表格中(从第二行开始)
+    _stateManager!.appendRows(
+      rows
+          .sublist(1)
+          .map((e) => PlutoRow(
+              cells: Map.fromIterables(
+                  rows[0], e.map((e2) => PlutoCell(value: e2)))))
+          .toList(),
+    );
   }
 
   void _addRow(List<List<String>> translateResult) {
@@ -171,7 +210,8 @@ class _ExportViewState extends State<ExportView> {
             child: LinearProgressIndicator(
               value: vm.currentTranslateProgress / vm.willTranslateCount,
               backgroundColor: const Color.fromARGB(255, 7, 8, 8),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color.fromARGB(255, 0, 255, 55)),
             ),
           ),
         ),
@@ -182,6 +222,25 @@ class _ExportViewState extends State<ExportView> {
         )
       ],
     );
+  }
+
+  /// 导入excel,替换状态管理中的表格
+  void _handleImportExcel() async {
+    print("导入excel");
+    String? excelPath = await pickFile("xlsx");
+    if (excelPath == null) {
+      return;
+    }
+    var excel = Excel.decodeBytes(File(excelPath).readAsBytesSync());
+    print('选择文件：$excelPath');
+    List<List<Data?>> rows = excel.sheets["Sheet1"]!.rows;
+    List<List<String>> listStringRows = [];
+    print("内容：");
+    for (var row in rows) {
+      print(row.map((e) => e?.value).toList());
+      listStringRows.add(row.map((e) => e?.value.toString() ?? '').toList());
+    }
+    _appDataViewModel.importExcelReplace(listStringRows);
   }
 
   @override
@@ -246,6 +305,20 @@ class _ExportViewState extends State<ExportView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
+                  onPressed: _handleImportExcel,
+                  style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all<Color>(
+                          Colors.white70.withAlpha(90)),
+                      elevation: WidgetStateProperty.all<double>(0),
+                      overlayColor:
+                          WidgetStateProperty.all<Color>(Colors.white24)),
+                  child: const Text("导入excel",
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                ElevatedButton(
                   onPressed: () {
                     // _addRow();
                     // AppDataViewModel appDataViewModel =
@@ -256,7 +329,8 @@ class _ExportViewState extends State<ExportView> {
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
                       elevation: WidgetStateProperty.all<double>(0),
-                      overlayColor: WidgetStateProperty.all<Color>(Colors.white24)),
+                      overlayColor:
+                          WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导入项目",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
@@ -271,7 +345,8 @@ class _ExportViewState extends State<ExportView> {
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Colors.white70.withAlpha(90)),
                       elevation: WidgetStateProperty.all<double>(0),
-                      overlayColor: WidgetStateProperty.all<Color>(Colors.white24)),
+                      overlayColor:
+                          WidgetStateProperty.all<Color>(Colors.white24)),
                   child: const Text("导出表格",
                       style: TextStyle(color: Colors.white, fontSize: 16)),
                 )
