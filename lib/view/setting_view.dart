@@ -207,7 +207,7 @@ class _SettingsViewState extends State<SettingsView> {
             padding: const EdgeInsets.symmetric(horizontal: 0),
             child: SizedBox(
               width: double.infinity,
-              height: 100,
+              height: 80,
               child: Column(
                 children: [
                   Row(
@@ -224,7 +224,7 @@ class _SettingsViewState extends State<SettingsView> {
                         },
                       ),
                       SizedBox(
-                        width: 100,
+                        width: 200,
                         height: 20,
                         child: buildInputField(
                           controller: _translateOptionControllers[0][0],
@@ -272,7 +272,7 @@ class _SettingsViewState extends State<SettingsView> {
                         },
                       ),
                       SizedBox(
-                        width: 100,
+                        width: 200,
                         height: 20,
                         child: buildInputField(
                           controller: _translateOptionControllers[0][0],
@@ -341,6 +341,7 @@ class _SettingsViewState extends State<SettingsView> {
           ],
         ),
       ),
+      // 密钥输入，这应该是一个密码输入框
       _buildSettingItemContent(
           title: "deepl密钥",
           child: SizedBox(
@@ -351,6 +352,7 @@ class _SettingsViewState extends State<SettingsView> {
               hintText: "deepl密钥",
               context: context,
               onChanged: (value) {},
+              obscureText: true,
             ),
           )),
       _buildSettingItemContent(title: "关于", child: _buildAboutItemContent()),

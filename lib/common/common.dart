@@ -4,7 +4,8 @@ Widget buildInputField(
     {required TextEditingController controller,
     required String hintText,
     required Function(String) onChanged,
-    required BuildContext context}) {
+    required BuildContext context,
+    bool obscureText = false}) {
   return Theme(
       data: Theme.of(context).copyWith(
         textSelectionTheme: const TextSelectionThemeData(
@@ -12,6 +13,7 @@ Widget buildInputField(
         ),
       ),
       child: TextField(
+        obscureText: obscureText,
         onChanged: onChanged,
         controller: controller,
         cursorColor: Colors.blue,
