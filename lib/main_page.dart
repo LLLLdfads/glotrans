@@ -11,6 +11,7 @@ import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:provider/provider.dart';
+// import 'package:rive/rive.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -70,6 +71,15 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildHeader() {
+    // return Container(
+    //   color: Colors.red,
+    //   height: 180,
+    //   width: 180,
+    //   child: RiveAnimation.asset(
+    //     "lib/assets/rive/glotrans_logo.riv",
+    //     fit: BoxFit.cover,
+    //   ),
+    // );
     return SizedBox(
       height: 100,
       width: double.infinity,
