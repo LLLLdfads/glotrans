@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:glo_trans/main_page.dart';
@@ -64,11 +65,42 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   Widget build(BuildContext context) {
     return OKToast(
         child: MaterialApp(
+      // 使用 FlexColorScheme 设置主题
+      theme: FlexThemeData.light(
+        scheme: FlexScheme.redM3,
+        surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+        blendLevel: 7,
+        subThemesData: const FlexSubThemesData(
+          blendOnLevel: 10,
+          blendOnColors: false,
+          useTextTheme: true,
+          useM2StyleDividerInM3: true,
+        ),
+        visualDensity: FlexColorScheme.comfortablePlatformDensity,
+        useMaterial3: true,
+        swapLegacyOnMaterial3: true,
+        // To use the Playground font, add GoogleFonts package and uncomment
+        // fontFamily: GoogleFonts.notoSans().fontFamily,
+      ),
+      darkTheme: FlexThemeData.dark(
+        scheme: FlexScheme.red,
+        surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+        blendLevel: 13,
+        subThemesData: const FlexSubThemesData(
+          blendOnLevel: 20,
+          useTextTheme: true,
+          useM2StyleDividerInM3: true,
+        ),
+        visualDensity: FlexColorScheme.comfortablePlatformDensity,
+        useMaterial3: true,
+        swapLegacyOnMaterial3: true,
+        // To use the Playground font, add GoogleFonts package and uncomment
+        // fontFamily: GoogleFonts.notoSans().fontFamily,
+      ),
       localizationsDelegates: const [
         S.delegate,
         // 不使用刷新框架的国际化(因为有些语言不支持, 改框架代码也麻烦)
@@ -80,9 +112,9 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: S.delegate.supportedLocales,
       locale: context.watch<AppDataViewModel>().locale,
       title: 'Glo Trans',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.blue,
+      // ),
       home: const MainPage(),
       builder: EasyLoading.init(),
     ));
