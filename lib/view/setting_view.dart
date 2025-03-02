@@ -22,10 +22,23 @@ class _SettingsViewState extends State<SettingsView> {
   bool _checked = true;
   List<TargetLanguageConfigModel> _allLanguageConfig = [];
   final ItemScrollController itemScrollController = ItemScrollController();
-  final List<String> _settingItems = ["翻译选项", "导出设置", "系统设置", "deepl密钥", "关于"];
+  final List<String> _settingItems = ["语言选项", "导出设置", "系统设置", "deepl密钥", "关于"];
   int _currentIndex = 0;
-  // 翻译选项的controller
+  // 翻译选项中导出翻译结果的行位置
   final List<List<TextEditingController>> _translateOptionControllers = [];
+
+  //插入位置的flag
+  final TextEditingController _l10nInsertFlag = TextEditingController();
+  final TextEditingController _androidInsertFlag = TextEditingController();
+
+  // 导出设置中的变量
+  bool _selectedL10nFileSetting = true;
+  bool _insertL10nProject = false;
+  bool _insertAndroidProject = false;
+  void _handleChangeSelectedL10nFileSetting() {
+    _selectedL10nFileSetting = !_selectedL10nFileSetting;
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -53,167 +66,486 @@ class _SettingsViewState extends State<SettingsView> {
     return [
       _buildSettingItemContent(
         title:
-            "翻译选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
+            "语言选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
         child: SizedBox(
             width: double.infinity,
-            height: 350,
-            child: ListView(
+            height: 330,
+            child: GridView(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, //横轴三个子widget
+                  childAspectRatio: 3.0 //宽高比为1时，子widget
+                  ),
               children: List.generate(_allLanguageConfig.length, (index) {
-                return Column(
+                return Row(
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.transparent,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: Text(
-                            "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12),
-                          ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.transparent,
+                          width: 1,
                         ),
-                        buildCheckbox(
-                          value: _allLanguageConfig[index].willTranslate,
-                          onChanged: (data) async {
-                            setState(() {
-                              _allLanguageConfig[index].willTranslate =
-                                  (data == true);
-                            });
-                            await ConfigStore.saveConfig(ConfigModel(
-                                deeplKey: appDataViewModel.config.deeplKey,
-                                targetLanguageConfigList: _allLanguageConfig));
-                          },
-                        ),
-                        // const
-                      ],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ),
-                    Row(
-                      children: [
-                        buildCheckbox(
-                          value: _allLanguageConfig[index].usel10n,
-                          onChanged: (data) {
-                            if (data == true) {
-                              if (_allLanguageConfig[index].l10nPath == null) {
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return const AlertDialog(
-                                        title: Text("请选择l10n文件"),
-                                      );
-                                    });
-                                return;
-                              }
-                            }
-                            setState(() {
-                              _allLanguageConfig[index].usel10n =
-                                  (data == true);
-                            });
-                          },
-                        ),
-                        SizedBox(
-                          width: 140,
-                          height: 20,
-                          child: buildInputField(
-                            controller: _translateOptionControllers[index][0],
-                            hintText: "l10n file path",
-                            context: context,
-                            onChanged: (value) {
-                              _allLanguageConfig[index].l10nPath = value;
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            String? oneL10nPath = await pickFile("arb");
-                            if (oneL10nPath != null) {
-                              _allLanguageConfig[index].usel10n = true;
-                              _allLanguageConfig[index].l10nPath = oneL10nPath;
-                              _translateOptionControllers[index][0].text =
-                                  oneL10nPath;
-                              setState(() {});
-                            }
-                          },
-                          child: const FaIcon(
-                            size: 20,
-                            FontAwesomeIcons.file,
-                            color: Color(0xff347080),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        buildCheckbox(
-                          value: _allLanguageConfig[index].useAndroid,
-                          onChanged: (data) {
-                            setState(() {
-                              _allLanguageConfig[index].useAndroid =
-                                  (data == true);
-                            });
-                          },
-                        ),
-                        SizedBox(
-                          width: 140,
-                          height: 20,
-                          child: buildInputField(
-                            controller: _translateOptionControllers[index][0],
-                            hintText: "android  file path",
-                            context: context,
-                            onChanged: (value) {
-                              _allLanguageConfig[index].l10nPath = value;
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            String? androidPath = await pickFile("xml");
-                            if (androidPath != null) {
-                              _allLanguageConfig[index].useAndroid = true;
-                              _allLanguageConfig[index].androidPath =
-                                  androidPath;
-                              _translateOptionControllers[index][1].text =
-                                  androidPath;
-                              setState(() {});
-                            }
-                          },
-                          child: const FaIcon(
-                            size: 20,
-                            FontAwesomeIcons.file,
-                            color: Color(0xff347080),
-                          ),
-                        )
-                      ],
+                    buildCheckbox(
+                      value: _allLanguageConfig[index].willTranslate,
+                      onChanged: (data) async {
+                        setState(() {
+                          _allLanguageConfig[index].willTranslate =
+                              (data == true);
+                        });
+                        await ConfigStore.saveConfig(ConfigModel(
+                            deeplKey: appDataViewModel.config.deeplKey,
+                            targetLanguageConfigList: _allLanguageConfig));
+                      },
                     ),
+                    // const
                   ],
                 );
               }),
             )),
       ),
+      // _buildSettingItemContent(
+      //   title:
+      //       "语言选项（已选择${_allLanguageConfig.where((element) => element.willTranslate).length}种语言）",
+      //   child: SizedBox(
+      //       width: double.infinity,
+      //       height: 350,
+      //       child: ListView(
+      //         children: List.generate(_allLanguageConfig.length, (index) {
+      //           return Column(
+      //             children: [
+      //               Row(
+      //                 children: [
+      //                   Container(
+      //                     decoration: BoxDecoration(
+      //                       border: Border.all(
+      //                         color: Colors.transparent,
+      //                         width: 1,
+      //                       ),
+      //                       borderRadius: BorderRadius.circular(2),
+      //                     ),
+      //                     child: Text(
+      //                       "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+      //                       style: const TextStyle(
+      //                           color: Colors.white, fontSize: 12),
+      //                     ),
+      //                   ),
+      //                   buildCheckbox(
+      //                     value: _allLanguageConfig[index].willTranslate,
+      //                     onChanged: (data) async {
+      //                       setState(() {
+      //                         _allLanguageConfig[index].willTranslate =
+      //                             (data == true);
+      //                       });
+      //                       await ConfigStore.saveConfig(ConfigModel(
+      //                           deeplKey: appDataViewModel.config.deeplKey,
+      //                           targetLanguageConfigList: _allLanguageConfig));
+      //                     },
+      //                   ),
+      //                   // const
+      //                 ],
+      //               ),
+      //               Row(
+      //                 children: [
+      //                   buildCheckbox(
+      //                     value: _allLanguageConfig[index].usel10n,
+      //                     onChanged: (data) {
+      //                       if (data == true) {
+      //                         if (_allLanguageConfig[index].l10nPath == null) {
+      //                           showDialog(
+      //                               context: context,
+      //                               builder: (_) {
+      //                                 return const AlertDialog(
+      //                                   title: Text("请选择l10n文件"),
+      //                                 );
+      //                               });
+      //                           return;
+      //                         }
+      //                       }
+      //                       setState(() {
+      //                         _allLanguageConfig[index].usel10n =
+      //                             (data == true);
+      //                       });
+      //                     },
+      //                   ),
+      //                   SizedBox(
+      //                     width: 140,
+      //                     height: 20,
+      //                     child: buildInputField(
+      //                       controller: _translateOptionControllers[index][0],
+      //                       hintText: "l10n file path",
+      //                       context: context,
+      //                       onChanged: (value) {
+      //                         _allLanguageConfig[index].l10nPath = value;
+      //                         setState(() {});
+      //                       },
+      //                     ),
+      //                   ),
+      //                   const SizedBox(
+      //                     width: 5,
+      //                   ),
+      //                   GestureDetector(
+      //                     onTap: () async {
+      //                       String? oneL10nPath = await pickFile("arb");
+      //                       if (oneL10nPath != null) {
+      //                         _allLanguageConfig[index].usel10n = true;
+      //                         _allLanguageConfig[index].l10nPath = oneL10nPath;
+      //                         _translateOptionControllers[index][0].text =
+      //                             oneL10nPath;
+      //                         setState(() {});
+      //                       }
+      //                     },
+      //                     child: const FaIcon(
+      //                       size: 20,
+      //                       FontAwesomeIcons.file,
+      //                       color: Color(0xff347080),
+      //                     ),
+      //                   ),
+      //                   const SizedBox(
+      //                     width: 5,
+      //                   ),
+      //                   buildCheckbox(
+      //                     value: _allLanguageConfig[index].useAndroid,
+      //                     onChanged: (data) {
+      //                       setState(() {
+      //                         _allLanguageConfig[index].useAndroid =
+      //                             (data == true);
+      //                       });
+      //                     },
+      //                   ),
+      //                   SizedBox(
+      //                     width: 140,
+      //                     height: 20,
+      //                     child: buildInputField(
+      //                       controller: _translateOptionControllers[index][0],
+      //                       hintText: "android  file path",
+      //                       context: context,
+      //                       onChanged: (value) {
+      //                         _allLanguageConfig[index].l10nPath = value;
+      //                         setState(() {});
+      //                       },
+      //                     ),
+      //                   ),
+      //                   const SizedBox(
+      //                     width: 5,
+      //                   ),
+      //                   GestureDetector(
+      //                     onTap: () async {
+      //                       String? androidPath = await pickFile("xml");
+      //                       if (androidPath != null) {
+      //                         _allLanguageConfig[index].useAndroid = true;
+      //                         _allLanguageConfig[index].androidPath =
+      //                             androidPath;
+      //                         _translateOptionControllers[index][1].text =
+      //                             androidPath;
+      //                         setState(() {});
+      //                       }
+      //                     },
+      //                     child: const FaIcon(
+      //                       size: 20,
+      //                       FontAwesomeIcons.file,
+      //                       color: Color(0xff347080),
+      //                     ),
+      //                   )
+      //                 ],
+      //               ),
+      //             ],
+      //           );
+      //         }),
+      //       )),
+      // ),
       _buildSettingItemContent(
           title: "导出设置",
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 0),
             child: SizedBox(
               width: double.infinity,
-              height: 80,
+              height: 490,
               child: Column(
                 children: [
                   Row(
+                    children: [
+                      const SizedBox(
+                        width: 50,
+                      ),
+                      const Text("导入l10n(flutter)项目"),
+                      buildCheckbox(
+                        value: _insertL10nProject,
+                        onChanged: (data) {
+                          setState(() {
+                            _insertL10nProject = !_insertL10nProject;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 50,
+                      ),
+                      const Text("导入安卓项目"),
+                      buildCheckbox(
+                        value: _insertAndroidProject,
+                        onChanged: (data) {
+                          setState(() {
+                            _insertAndroidProject = !_insertAndroidProject;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 30,
+                    child: Center(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                            color: Color.fromARGB(255, 35, 35, 35)),
+                        width: 200,
+                        height: 50,
+                        child: Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: _handleChangeSelectedL10nFileSetting,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(50)),
+                                    color: _selectedL10nFileSetting
+                                        ? const Color.fromARGB(
+                                            255, 104, 103, 103)
+                                        : Colors.transparent,
+                                  ),
+                                  height: 40,
+                                  width: 95,
+                                  child: const Center(
+                                    child: Text("l10n文件"),
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: _handleChangeSelectedL10nFileSetting,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(50)),
+                                    color: !_selectedL10nFileSetting
+                                        ? const Color.fromARGB(
+                                            255, 104, 103, 103)
+                                        : Colors.transparent,
+                                  ),
+                                  height: 40,
+                                  width: 95,
+                                  child: const Center(
+                                    child: Text("安卓文件"),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  _selectedL10nFileSetting
+                      ? SizedBox(
+                          width: double.infinity,
+                          height: 300,
+                          child: ListView(
+                              children: List.generate(_allLanguageConfig.length,
+                                  (index) {
+                            return Column(children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.transparent,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Text(
+                                      "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 12),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    height: 20,
+                                    child: buildInputField(
+                                      controller:
+                                          _translateOptionControllers[index][0],
+                                      hintText: "l10n file path",
+                                      context: context,
+                                      onChanged: (value) {
+                                        _allLanguageConfig[index].l10nPath =
+                                            value;
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      String? oneL10nPath =
+                                          await pickFile("arb");
+                                      if (oneL10nPath != null) {
+                                        _allLanguageConfig[index].usel10n =
+                                            true;
+                                        _allLanguageConfig[index].l10nPath =
+                                            oneL10nPath;
+                                        _translateOptionControllers[index][0]
+                                            .text = oneL10nPath;
+                                        setState(() {});
+                                      }
+                                    },
+                                    child: const FaIcon(
+                                      size: 20,
+                                      FontAwesomeIcons.file,
+                                      color: Color(0xff347080),
+                                    ),
+                                  ),
+                                  buildCheckbox(
+                                    value: _allLanguageConfig[index].usel10n,
+                                    onChanged: (data) {
+                                      if (data == true) {
+                                        if (_allLanguageConfig[index]
+                                                .l10nPath ==
+                                            null) {
+                                          showDialog(
+                                              context: context,
+                                              builder: (_) {
+                                                return const AlertDialog(
+                                                  title: Text("请选择l10n文件"),
+                                                );
+                                              });
+                                          return;
+                                        }
+                                      }
+                                      setState(() {
+                                        _allLanguageConfig[index].usel10n =
+                                            (data == true);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ]);
+                          })))
+                      : SizedBox(
+                          width: double.infinity,
+                          height: 300,
+                          child: ListView(
+                              children: List.generate(_allLanguageConfig.length,
+                                  (index) {
+                            return Column(children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.transparent,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Text(
+                                      "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 12),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    height: 20,
+                                    child: buildInputField(
+                                      controller:
+                                          _translateOptionControllers[index][1],
+                                      hintText: "android file path",
+                                      context: context,
+                                      onChanged: (value) {
+                                        _allLanguageConfig[index].androidPath =
+                                            value;
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      String? oneAndroidPath =
+                                          await pickFile("xml");
+                                      if (oneAndroidPath != null) {
+                                        _allLanguageConfig[index].useAndroid =
+                                            true;
+                                        _allLanguageConfig[index].androidPath =
+                                            oneAndroidPath;
+                                        _translateOptionControllers[index][1]
+                                            .text = oneAndroidPath;
+                                        setState(() {});
+                                      }
+                                    },
+                                    child: const FaIcon(
+                                      size: 20,
+                                      FontAwesomeIcons.file,
+                                      color: Color(0xff347080),
+                                    ),
+                                  ),
+                                  buildCheckbox(
+                                    value: _allLanguageConfig[index].useAndroid,
+                                    onChanged: (data) {
+                                      if (data == true) {
+                                        if (_allLanguageConfig[index]
+                                                .androidPath ==
+                                            null) {
+                                          showDialog(
+                                              context: context,
+                                              builder: (_) {
+                                                return const AlertDialog(
+                                                  title: Text("请选择安卓文件"),
+                                                );
+                                              });
+                                          return;
+                                        }
+                                      }
+                                      setState(() {
+                                        _allLanguageConfig[index].usel10n =
+                                            (data == true);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ]);
+                          }))),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("前"),
+                      const Text("前插"),
                       buildCheckbox(
                         value: appDataViewModel.config.insertBeforeL10nFlag,
                         onChanged: (data) {
@@ -227,22 +559,18 @@ class _SettingsViewState extends State<SettingsView> {
                         width: 200,
                         height: 20,
                         child: buildInputField(
-                          controller: _translateOptionControllers[0][0],
+                          controller: _l10nInsertFlag,
                           hintText: "l10n翻译文件标识",
                           context: context,
                           onChanged: (value) {},
                         ),
                       ),
-                      const Text("后"),
-                      Checkbox(
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      const Text("后插"),
+                      buildCheckbox(
                         value: !appDataViewModel.config.insertBeforeL10nFlag,
-                        activeColor: Colors.lightGreen,
-                        checkColor: Colors.white,
-                        tristate: true,
-                        overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        // 移除悬停效果
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         onChanged: (data) {
                           setState(() {
                             appDataViewModel.config.insertBeforeL10nFlag =
@@ -255,19 +583,14 @@ class _SettingsViewState extends State<SettingsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("前"),
-                      Checkbox(
-                        value: _checked,
-                        activeColor: Colors.lightGreen,
-                        checkColor: Colors.white,
-                        tristate: true,
-                        overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        // 移除悬停效果
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      const Text("前插"),
+                      buildCheckbox(
+                        value: appDataViewModel.config.insertBeforeAndroidFlag,
                         onChanged: (data) {
                           setState(() {
-                            _checked = !_checked;
+                            appDataViewModel.config.insertBeforeAndroidFlag =
+                                !appDataViewModel
+                                    .config.insertBeforeAndroidFlag;
                           });
                         },
                       ),
@@ -275,25 +598,23 @@ class _SettingsViewState extends State<SettingsView> {
                         width: 200,
                         height: 20,
                         child: buildInputField(
-                          controller: _translateOptionControllers[0][0],
-                          hintText: "l10n翻译文件标识",
+                          controller: _androidInsertFlag,
+                          hintText: "android翻译文件标识",
                           context: context,
                           onChanged: (value) {},
                         ),
                       ),
-                      const Text("后"),
-                      Checkbox(
-                        value: _checked,
-                        activeColor: Colors.lightGreen,
-                        checkColor: Colors.white,
-                        tristate: true,
-                        overlayColor:
-                            WidgetStateProperty.all(Colors.transparent),
-                        // 移除悬停效果
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      const Text("后插"),
+                      buildCheckbox(
+                        value: !appDataViewModel.config.insertBeforeAndroidFlag,
                         onChanged: (data) {
                           setState(() {
-                            _checked = !_checked;
+                            appDataViewModel.config.insertBeforeAndroidFlag =
+                                !appDataViewModel
+                                    .config.insertBeforeAndroidFlag;
                           });
                         },
                       ),
@@ -309,7 +630,7 @@ class _SettingsViewState extends State<SettingsView> {
           children: [
             Center(
               child: DropdownMenu<String>(
-                menuHeight: 400,
+                menuHeight: 350,
                 initialSelection: ['中文'].first,
                 onSelected: (value) {
                   context.read<AppDataViewModel>().locale =
@@ -321,11 +642,11 @@ class _SettingsViewState extends State<SettingsView> {
               ),
             ),
             const SizedBox(
-              height: 10,
+              height: 5,
             ),
             Center(
               child: DropdownMenu<String>(
-                menuHeight: 400,
+                menuHeight: 350,
                 initialSelection: [
                   '暗色',
                 ].first,
