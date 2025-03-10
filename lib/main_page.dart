@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/generated/l10n.dart';
-import 'package:glo_trans/model/config_model.dart';
+import 'package:glo_trans/model/settings/config_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/view/export_view.dart';
@@ -34,7 +34,7 @@ class _MainPageState extends State<MainPage> {
     print("支持的语种:${S.delegate.supportedLocales}");
   }
 
-  void _initConfig() {
+  void _initConfig() async {
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
     for (var countryLanguage in AppConst.allCountryLanguage) {
       appDataViewModel.config.targetLanguageConfigList.add(

@@ -2,26 +2,132 @@ import 'dart:async';
 // import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:glo_trans/model/config_model.dart';
-import 'package:glo_trans/model/target_language_config_model.dart';
+import 'package:glo_trans/app_const.dart';
+import 'package:glo_trans/db/export_settings_store.dart';
+import 'package:glo_trans/db/key_store.dart';
+import 'package:glo_trans/db/system_setting_store.dart';
+import 'package:glo_trans/db/will_do_lan_store.dart';
+import 'package:glo_trans/model/settings/config_model.dart';
+import 'package:glo_trans/model/settings/export_setting_model.dart';
+import 'package:glo_trans/model/settings/system_setting_model.dart';
 import 'package:glo_trans/model/translate_result_model.dart';
 import 'package:glo_trans/service/translate_result_list_store.dart';
 
 import '../utils.dart';
 
 class AppDataViewModel extends ChangeNotifier {
+  // 设置·语言选项（将会翻译的项）
+  List<bool> willDoLan = [];
+  void setWillDoLan(List<bool> willDoLan) {
+    this.willDoLan = willDoLan;
+    WillDoLanStore.saveLanList(willDoLan);
+    notifyListeners();
+  }
+
+  // 设置·导出设置（导入文件，导入位置，插入flag）
+  ExportSettingModel exportingModel = ExportSettingModel(
+    toL10n: false,
+    toAndroid: false,
+    l10nFiles: [],
+    l10nFilesEnable: [],
+    androidFiles: [],
+    androidFilesEnable: [],
+    l10nFlag: "",
+    androidFlag: "",
+    isInsertBeforeL10nFlag: true,
+    isInsertBeforeAndroidFlag: true,
+  );
+  void setExportingModel() {
+    ExportSettingsStore.saveExportSettingModel(exportingModel);
+    notifyListeners();
+  }
+
+  // 设置·系统设置（系统语言，主题）
+  SystemSettingModel systemSettingModel = SystemSettingModel(
+    systemLan: 0,
+    themeKind: 0,
+  );
+  void setSystemSettingModel() {
+    SystemSettingStore.saveSystemSettingModel(systemSettingModel);
+    notifyListeners();
+  }
+
+  // 设置·密钥
+  String key = "";
+  void setKey(String key) {
+    this.key = key;
+    KeyStore.saveKey(key);
+    notifyListeners();
+  }
+
+  // 设置·初始化配置项
+  Future<void> initSettingConfig() async {
+    // 设置·语言选项（将会翻译的项）
+    List<bool>? willDoLanRes = await WillDoLanStore.getLanList();
+    print("willDoLanRes: $willDoLanRes");
+    if (willDoLanRes == null) {
+      willDoLan = List.generate(AppConst.supportLanMap.length, (_) => false);
+    } else {
+      willDoLan = willDoLanRes;
+    }
+    // 设置·导出设置（导入文件，导入位置，插入flag）
+    ExportSettingModel? exportingModelRes =
+        await ExportSettingsStore.getExportSettingModel();
+    print("exportingModelRes: ${exportingModelRes?.toJson()}");
+    if (exportingModelRes == null) {
+      exportingModel = ExportSettingModel(
+        toL10n: false,
+        toAndroid: false,
+        l10nFiles: List.generate(AppConst.supportLanMap.length, (_) => ""),
+        l10nFilesEnable:
+            List.generate(AppConst.supportLanMap.length, (_) => false),
+        androidFiles: List.generate(AppConst.supportLanMap.length, (_) => ""),
+        androidFilesEnable:
+            List.generate(AppConst.supportLanMap.length, (_) => false),
+        l10nFlag: "",
+        androidFlag: "",
+        isInsertBeforeL10nFlag: true,
+        isInsertBeforeAndroidFlag: true,
+      );
+    } else {
+      exportingModel = exportingModelRes;
+    }
+    // 设置·系统设置（系统语言，主题）
+    SystemSettingModel? systemSettingModelRes =
+        await SystemSettingStore.getSystemSettingModel();
+    print("systemSettingModelRes: ${systemSettingModelRes?.toJson()}");
+    if (systemSettingModelRes == null) {
+      systemSettingModel = SystemSettingModel(
+        systemLan: 0,
+        themeKind: 0,
+      );
+    } else {
+      systemSettingModel = systemSettingModelRes;
+    }
+    // 设置·密钥
+    String? keyRes = await KeyStore.getKey();
+    print("keyRes: $keyRes");
+    if (keyRes == null) {
+      key = "1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx";
+    } else {
+      key = keyRes;
+    }
+    notifyListeners();
+  }
+
+  // 翻译·当前输入
   String? currentSentence;
 
   bool translating = false;
   int currentTranslateProgress = 0;
   Map<String, String> currentkeyValueMap = {};
-  int get currentWillTranslateCount =>
-      config.targetLanguageConfigList.where((e) => e.willTranslate).length;
-  int get willTranslateCount =>
-      config.targetLanguageConfigList.where((e) => e.willTranslate).length *
-      currentkeyValueMap.length;
-  List<TargetLanguageConfigModel> get currentWillTranslateLanguageList =>
-      config.targetLanguageConfigList.where((e) => e.willTranslate).toList();
+  // int get currentWillTranslateCount =>
+  //     config.targetLanguageConfigList.where((e) => e.willTranslate).length;
+  // int get willTranslateCount =>
+  //     config.targetLanguageConfigList.where((e) => e.willTranslate).length *
+  //     currentkeyValueMap.length;
+  int get willTranslateCount => 0;
+
   // 翻译耗时
   int translateTakesTime = 0;
   Timer? _timer;
@@ -33,13 +139,14 @@ class AppDataViewModel extends ChangeNotifier {
 
   int currentPageViewIndex = 0;
 
-  Locale _locale = const Locale('zh', 'CN');
-  Locale get locale => _locale;
+  // Locale _locale = const Locale('zh', 'CN');
+  // Locale get locale => _locale;
 
-  set locale(Locale value) {
-    _locale = value;
-    notifyListeners();
-  }
+  // set locale(Locale value) {
+  //   _locale = value;
+  //   setSystemSettingModel();
+  //   notifyListeners();
+  // }
 
   void startTranslating(Map<String, String> keyValueMap) {
     currentkeyValueMap = keyValueMap;
@@ -90,15 +197,15 @@ class AppDataViewModel extends ChangeNotifier {
     int index = 0;
     for (var value in keyValueMap.values) {
       List<String> oneLineRes = [];
-      for (var targetLanguageConfig in currentWillTranslateLanguageList) {
-        String res = await translateOneLanguageTextForDev(
-            targetLanguageConfig.language, value, config.deeplKey);
-        print(res);
-        // oneLineRes.add(jsonDecode(res)["translations"][0]["text"]);
-        oneLineRes.add(res);
-        currentTranslateProgress += 1;
-        notifyListeners();
-      }
+      // for (var targetLanguageConfig in currentWillTranslateLanguageList) {
+      //   String res = await translateOneLanguageTextForDev(
+      //       targetLanguageConfig.language, value, config.deeplKey);
+      //   print(res);
+      //   // oneLineRes.add(jsonDecode(res)["translations"][0]["text"]);
+      //   oneLineRes.add(res);
+      //   currentTranslateProgress += 1;
+      //   notifyListeners();
+      // }
       translateResult[index] = [
         index.toString(),
         keyValueMap.keys.toList()[index],

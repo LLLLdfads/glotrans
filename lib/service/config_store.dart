@@ -1,4 +1,4 @@
-import 'package:glo_trans/model/config_model.dart';
+import 'package:glo_trans/model/settings/config_model.dart';
 import 'package:hive/hive.dart';
 
 class ConfigStore {

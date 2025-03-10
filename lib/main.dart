@@ -2,7 +2,9 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:glo_trans/main_page.dart';
-import 'package:glo_trans/model/config_model.dart';
+import 'package:glo_trans/model/settings/config_model.dart';
+import 'package:glo_trans/model/settings/export_setting_model.dart';
+import 'package:glo_trans/model/settings/system_setting_model.dart';
 import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/model/translate_result_model.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
@@ -25,6 +27,8 @@ void main() async {
   Hive.registerAdapter(ConfigModelAdapter());
   Hive.registerAdapter(TranslateResultModelAdapter());
   Hive.registerAdapter(TranslateResultModelListAdapter());
+  Hive.registerAdapter(SystemSettingModelAdapter());
+  Hive.registerAdapter(ExportSettingModelAdapter());
   await windowManager.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
@@ -65,6 +69,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<AppDataViewModel>().initSettingConfig();
+  }
+
   @override
   Widget build(BuildContext context) {
     return OKToast(
@@ -110,7 +120,11 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: S.delegate.supportedLocales,
-      locale: context.watch<AppDataViewModel>().locale,
+      locale:
+          context.watch<AppDataViewModel>().systemSettingModel.systemLan == 0
+              ? const Locale('zh')
+              : const Locale('en'),
+
       title: 'Glo Trans',
       // theme: ThemeData(
       //   primarySwatch: Colors.blue,
