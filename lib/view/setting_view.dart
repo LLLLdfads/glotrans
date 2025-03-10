@@ -1,20 +1,13 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/common/common.dart';
-import 'package:glo_trans/db/will_do_lan_store.dart';
-import 'package:glo_trans/model/settings/config_model.dart';
 import 'package:glo_trans/model/settings/export_setting_model.dart';
 import 'package:glo_trans/model/settings/system_setting_model.dart';
-import 'package:glo_trans/model/target_language_config_model.dart';
-import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/utils.dart';
+import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
-import '../view_model/app_data_view_model.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -24,25 +17,15 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  String f = "";
-  List<TargetLanguageConfigModel> _allLanguageConfig = [];
   final ItemScrollController itemScrollController = ItemScrollController();
   final List<String> _settingItems = ["语言选项", "导出设置", "系统设置", "deepl密钥", "关于"];
-  int _currentIndex = 0;
-  // 翻译选项中导出翻译结果的行位置
-  final List<List<TextEditingController>> _translateOptionControllers = [];
-
-  //插入位置的flag
-  final TextEditingController _l10nInsertFlag = TextEditingController();
-  final TextEditingController _androidInsertFlag = TextEditingController();
+  int _scrollIndex = 0;
 
   final List<TextEditingController> _l10nFilesControllers = [];
   final List<TextEditingController> _androidFilesControllers = [];
 
   // 导出设置中的变量
   bool _selectedL10nFileSetting = true;
-  bool _insertL10nProject = false;
-  bool _insertAndroidProject = false;
   void _handleChangeSelectedL10nFileSetting() {
     _selectedL10nFileSetting = !_selectedL10nFileSetting;
     setState(() {});
@@ -52,7 +35,6 @@ class _SettingsViewState extends State<SettingsView> {
   void initState() {
     super.initState();
     AppDataViewModel appDataViewModel = context.read<AppDataViewModel>();
-    _allLanguageConfig = appDataViewModel.config.targetLanguageConfigList;
 
     appDataViewModel.exportingModel.l10nFiles.forEach((element) {
       _l10nFilesControllers.add(TextEditingController()..text = element);
@@ -113,8 +95,11 @@ class _SettingsViewState extends State<SettingsView> {
                           buildCheckbox(
                             value: willDoLan[index],
                             onChanged: (data) async {
-                              willDoLan[index] = (data == true);
-                              appDataViewModel.setWillDoLan(willDoLan);
+                              List<bool> tempWillDoLan =
+                                  List.from(appDataViewModel.willDoLan);
+                              tempWillDoLan[index] = (data == true);
+                              appDataViewModel.willDoLan = tempWillDoLan;
+                              appDataViewModel.setWillDoLan();
                             },
                           ),
                           // const
@@ -400,7 +385,7 @@ class _SettingsViewState extends State<SettingsView> {
                                               BorderRadius.circular(2),
                                         ),
                                         child: Text(
-                                          "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                                          "${AppConst.supportLanMap.entries.toList()[index].key}${AppConst.supportLanMap.entries.toList()[index].value}",
                                           style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12),
@@ -510,7 +495,7 @@ class _SettingsViewState extends State<SettingsView> {
                                               BorderRadius.circular(2),
                                         ),
                                         child: Text(
-                                          "${_allLanguageConfig[index].country}${_allLanguageConfig[index].language}",
+                                          "${AppConst.supportLanMap.entries.toList()[index].key}${AppConst.supportLanMap.entries.toList()[index].value}",
                                           style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12),
@@ -622,7 +607,8 @@ class _SettingsViewState extends State<SettingsView> {
                             width: 200,
                             height: 20,
                             child: buildInputField(
-                              controller: _l10nInsertFlag,
+                              controller: TextEditingController()
+                                ..text = exportingModel.l10nFlag,
                               hintText: "l10n翻译文件标识",
                               context: context,
                               onChanged: (value) {},
@@ -660,7 +646,8 @@ class _SettingsViewState extends State<SettingsView> {
                             width: 200,
                             height: 20,
                             child: buildInputField(
-                              controller: _androidInsertFlag,
+                              controller: TextEditingController()
+                                ..text = exportingModel.androidFlag,
                               hintText: "android翻译文件标识",
                               context: context,
                               onChanged: (value) {},
@@ -838,8 +825,8 @@ class _SettingsViewState extends State<SettingsView> {
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  _currentIndex = index;
-                                  _scrollToItem(index);
+                                  _scrollIndex = index;
+                                  _scrollToItem(_scrollIndex);
                                 });
                               },
                               child: SizedBox(
@@ -855,7 +842,7 @@ class _SettingsViewState extends State<SettingsView> {
                                           decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(2),
-                                              color: _currentIndex == index
+                                              color: _scrollIndex == index
                                                   ? Colors.white
                                                   : Colors.white38)),
                                       const SizedBox(
@@ -866,7 +853,7 @@ class _SettingsViewState extends State<SettingsView> {
                                           _settingItems[index],
                                           style: TextStyle(
                                               fontSize: 18,
-                                              color: _currentIndex == index
+                                              color: _scrollIndex == index
                                                   ? Colors.white
                                                   : Colors.white38),
                                         ),

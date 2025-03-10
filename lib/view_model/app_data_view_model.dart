@@ -18,8 +18,7 @@ import '../utils.dart';
 class AppDataViewModel extends ChangeNotifier {
   // 设置·语言选项（将会翻译的项）
   List<bool> willDoLan = [];
-  void setWillDoLan(List<bool> willDoLan) {
-    this.willDoLan = willDoLan;
+  void setWillDoLan() {
     WillDoLanStore.saveLanList(willDoLan);
     notifyListeners();
   }
