@@ -53,6 +53,11 @@ class _TranslateViewState extends State<TranslateView> {
   void initState() {
     super.initState();
     _appDataViewModel = context.read<AppDataViewModel>();
+    // 预制翻译文本，方便调试
+    _appDataViewModel.currentSentence =
+        // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包","text_key":"钥匙","text_apple":"苹果","text_orange":"橘子","text_banana":"香蕉","text_onion":"洋葱","text_watermelon":"西瓜"';
+        // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包"';
+        '"text_window":"窗户","text_table":"桌子"';
     _currentSentence = _appDataViewModel.currentSentence;
     _textEditingController.text = _currentSentence ?? "";
     setState(() {});
@@ -65,6 +70,7 @@ class _TranslateViewState extends State<TranslateView> {
       showToast("未检测到输入");
       return;
     }
+
     // 如果无法解析输入的文本，也需要有提示
     Map<String, String> keyValueMap = {};
     try {
@@ -97,6 +103,13 @@ class _TranslateViewState extends State<TranslateView> {
     });
   }
 
+  // 防止dialog中切换页面，发生对已unmouted后的还更新状态的错误
+  void _switchToExportView() async {
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _appDataViewModel.switchPage(1);
+    });
+  }
+
   void _showProgressDialog() {
     showDialog(
       context: context,
@@ -104,7 +117,7 @@ class _TranslateViewState extends State<TranslateView> {
       builder: (BuildContext context) {
         return AlertDialog(
           content: SizedBox(
-              height: 270,
+              height: 257,
               child: Column(
                 children: [
                   const SizedBox(height: 20),
@@ -130,54 +143,33 @@ class _TranslateViewState extends State<TranslateView> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(
-                        height: 57,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            Selector<AppDataViewModel, int>(
-                              selector: (_, vm) => vm.translatedCount,
-                              builder: (context, translatedCount, child) {
-                                return Text(
-                                  '进度: $translatedCount/${_appDataViewModel.totalTranslateCount}',
-                                  style: const TextStyle(fontSize: 12),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 4),
-                            Selector<AppDataViewModel, int>(
-                              selector: (_, vm) => vm.translateTakesTime,
-                              builder: (context, time, child) {
-                                return Text(
-                                  '耗时: $time 秒',
-                                  style: const TextStyle(fontSize: 12),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          // _appendLog('正在翻译: hello world...');
-                          // _appendLog('翻译完成: 你好世界');
-                          Navigator.of(context).pop();
-                          _appDataViewModel.translateTimer?.cancel();
-                          _appDataViewModel.stopTranslate = true;
+                      Selector<AppDataViewModel, int>(
+                        selector: (_, vm) => vm.translatedCount,
+                        builder: (context, translatedCount, child) {
+                          return Text(
+                            '进度: $translatedCount/${_appDataViewModel.totalTranslateCount}',
+                            style: const TextStyle(fontSize: 12),
+                          );
                         },
-                        child: const Text(
-                          '取消',
-                          style: TextStyle(color: Color(0xff347080)),
-                        ),
-                      )
+                      ),
+                      const SizedBox(width: 20),
+                      Selector<AppDataViewModel, int>(
+                        selector: (_, vm) => vm.translateTakesTime,
+                        builder: (context, time, child) {
+                          return Text(
+                            '耗时: $time 秒',
+                            style: const TextStyle(fontSize: 12),
+                          );
+                        },
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 8),
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
                     height: 150, // 可以调整高度
                     width: 400,
                     decoration: BoxDecoration(
@@ -202,6 +194,48 @@ class _TranslateViewState extends State<TranslateView> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          _appDataViewModel.translateTimer?.cancel();
+                          _appDataViewModel.stopTranslate = true;
+                          exportToExcel(_appDataViewModel.currentTranslateRes);
+                        },
+                        child: const Text(
+                          '导出表格',
+                          style: TextStyle(color: Color(0xff347080)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          _appDataViewModel.translateTimer?.cancel();
+                          _appDataViewModel.stopTranslate = true;
+                          _appDataViewModel.currentTable =
+                              _appDataViewModel.currentTranslateRes;
+                          Navigator.of(context).pop();
+                          _switchToExportView();
+                        },
+                        child: const Text(
+                          '表格查看',
+                          style: TextStyle(color: Color(0xff347080)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _appDataViewModel.translateTimer?.cancel();
+                          _appDataViewModel.stopTranslate = true;
+                        },
+                        child: const Text(
+                          '取消翻译',
+                          style: TextStyle(color: Color(0xff347080)),
+                        ),
+                      )
+                    ],
+                  )
                 ],
               )),
         );

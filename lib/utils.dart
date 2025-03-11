@@ -112,11 +112,11 @@ Future<String> translateOneLanguageText(
 Future<String> translateOneLanguageTextForDev(
     String language, String text, String key) async {
   key = "1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx";
-  await Future.delayed(const Duration(milliseconds: 100));
+  await Future.delayed(const Duration(milliseconds: 50));
   return "$language -$text";
 }
 
-Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
+Future<void> exportToExcelForPGSM(PlutoGridStateManager stateManager) async {
   // 创建一个新的 Excel 文件
   var excel = Excel.createExcel();
 
@@ -148,6 +148,46 @@ Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
     String? outputFile = await FilePicker.platform.saveFile(
       dialogTitle: '保存 Excel 文件',
       fileName: 'exported_data.xlsx',
+    );
+
+    if (outputFile != null) {
+      // 写入文件
+      await File(outputFile).writeAsBytes(fileBytes);
+    }
+  }
+}
+
+// list格式导出excel
+Future<void> exportToExcel(List<List<String>> data) async {
+  // 创建一个新的 Excel 文件
+  var excel = Excel.createExcel();
+
+  // 获取当前表格的 Sheet
+  var sheet = excel['Sheet1'];
+
+  // 添加数据行
+  for (var rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    var row = data[rowIndex];
+    for (var colIndex = 0; colIndex < row.length; colIndex++) {
+      var cell = row[colIndex];
+      sheet
+          .cell(CellIndex.indexByColumnRow(
+              columnIndex: colIndex, rowIndex: rowIndex))
+          .value = cell;
+    }
+  }
+
+  // 保存文件
+  var fileBytes = excel.save();
+  if (fileBytes != null) {
+    // 保存的文件名称以为当前时间为准，如2025年3月11日10点10分，就命名成25_0311_1010
+    String now = DateTime.now().toString();
+    String fileName =
+        '${now.substring(0, 4)}_${now.substring(5, 7)}_${now.substring(11, 13)}_${now.substring(14, 16)}';
+    // 使用 file_picker 选择保存路径
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: '保存 Excel 文件',
+      fileName: '$fileName.xlsx',
     );
 
     if (outputFile != null) {

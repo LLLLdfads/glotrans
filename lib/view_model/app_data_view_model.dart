@@ -165,16 +165,22 @@ class AppDataViewModel extends ChangeNotifier {
 
   int translatedCount = 0;
   int totalTranslateCount = 0;
-  List<List<String>> translateRes = [];
+  List<List<String>> currentTable = [];
   bool stopTranslate = false;
+  List<List<String>> currentTranslateRes = [];
 
   // 翻译
   Future translate(Map<String, String> keyValueMap, List<String> willDoLanStr,
       Function(String) onTranslatedAText) async {
+    currentTranslateRes = [];
     onTranslatedAText(
         "author: Dewen.Luo\nversion: 3.0\ndescription: 词条转多语言并以excel文件保存在history文件夹中\ne-mail: a3229785914@qq.com");
+    onTranslatedAText("翻译语种(${willDoLanStr.length})：${willDoLanStr.join(",")}");
+    // 生成表头
+    List<String> header = ["index", "key", ...willDoLanStr];
+    currentTranslateRes.add(header);
     for (int i = 0; i < keyValueMap.length; i++) {
-      List<String> oneLineRes = [];
+      List<String> oneLineRes = [i.toString(), keyValueMap.keys.elementAt(i)];
       String name = keyValueMap.keys.elementAt(i);
       String value = keyValueMap.values.elementAt(i);
       onTranslatedAText("开始处理'$name':'$value'");
@@ -183,14 +189,15 @@ class AppDataViewModel extends ChangeNotifier {
         if (stopTranslate) return;
         String lan = willDoLanStr[j];
         String res =
-            await translateOneLanguageText(lan.split("_")[1], value, key);
+            // await translateOneLanguageText(lan.split("_")[1], value, key);
+            await translateOneLanguageTextForDev(lan.split("_")[1], value, key);
         print(res);
         oneLineRes.add(res);
         translatedCount++;
         notifyListeners();
         onTranslatedAText("${lan.padRight(15, ' ')}:$res");
       }
-      translateRes.add(oneLineRes);
+      currentTranslateRes.add(oneLineRes);
     }
     onTranslatedAText("翻译完成");
     translateTimer?.cancel();

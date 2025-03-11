@@ -6,6 +6,7 @@ import 'package:glo_trans/model/settings/export_setting_model.dart';
 import 'package:glo_trans/model/settings/system_setting_model.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -439,13 +440,7 @@ class _SettingsViewState extends State<SettingsView> {
                                             if (exportingModel
                                                     .l10nFiles[index] ==
                                                 "") {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (_) {
-                                                    return const AlertDialog(
-                                                      title: Text("请选择l10n文件"),
-                                                    );
-                                                  });
+                                              showToast("请选择l10n文件");
                                               return;
                                             }
                                           }
@@ -551,13 +546,7 @@ class _SettingsViewState extends State<SettingsView> {
                                             if (exportingModel
                                                     .androidFiles[index] ==
                                                 "") {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (_) {
-                                                    return const AlertDialog(
-                                                      title: Text("请选择安卓文件"),
-                                                    );
-                                                  });
+                                              showToast("请选择安卓文件");
                                               return;
                                             }
                                           }
@@ -600,7 +589,11 @@ class _SettingsViewState extends State<SettingsView> {
                                 ..text = exportingModel.l10nFlag,
                               hintText: "l10n翻译文件标识",
                               context: context,
-                              onChanged: (value) {},
+                              onChanged: (value) {
+                                appDataViewModel.exportingModel =
+                                    exportingModel.changeAttr(l10nFlag: value);
+                                appDataViewModel.setExportingModel();
+                              },
                             ),
                           ),
                           const SizedBox(
@@ -639,7 +632,11 @@ class _SettingsViewState extends State<SettingsView> {
                                 ..text = exportingModel.androidFlag,
                               hintText: "android翻译文件标识",
                               context: context,
-                              onChanged: (value) {},
+                              onChanged: (value) {
+                                appDataViewModel.exportingModel = exportingModel
+                                    .changeAttr(androidFlag: value);
+                                appDataViewModel.setExportingModel();
+                              },
                             ),
                           ),
                           const SizedBox(
