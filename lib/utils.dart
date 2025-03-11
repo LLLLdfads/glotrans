@@ -71,6 +71,8 @@ Future<List<String>> translateOneLanguageTexts(
 // 翻译一种语言（单个文本）
 Future<String> translateOneLanguageText(
     String language, String text, String key) async {
+  key = "1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx";
+
   var dio = Dio();
   var url = AppConst.deeplurl;
   String res = "";
@@ -95,7 +97,7 @@ Future<String> translateOneLanguageText(
       // response.data['translations'].forEach((e) {
       //   res.add(e.toString());
       // });
-      res = response.data['translations'][0].toString();
+      res = response.data['translations'][0]['text'].toString();
     } else {
       print('翻译失败：${response.statusCode}');
     }
@@ -109,6 +111,7 @@ Future<String> translateOneLanguageText(
 // 翻译一种语言（单个文本）,不调用接口，直接返回
 Future<String> translateOneLanguageTextForDev(
     String language, String text, String key) async {
+  key = "1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx";
   await Future.delayed(const Duration(milliseconds: 100));
   return "$language -$text";
 }
@@ -122,8 +125,8 @@ Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
 
   // 添加表头
   for (var i = 0; i < stateManager.columns.length; i++) {
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-      .value = stateManager.columns[i].title;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0)).value =
+        stateManager.columns[i].title;
   }
 
   // 添加数据行
@@ -131,9 +134,10 @@ Future<void> exportToExcel(PlutoGridStateManager stateManager) async {
     var row = stateManager.rows[rowIndex];
     for (var colIndex = 0; colIndex < stateManager.columns.length; colIndex++) {
       var cell = row.cells[stateManager.columns[colIndex].field];
-      sheet.cell(CellIndex.indexByColumnRow(
-          columnIndex: colIndex, rowIndex: rowIndex + 1))
-        .value = cell?.value.toString();
+      sheet
+          .cell(CellIndex.indexByColumnRow(
+              columnIndex: colIndex, rowIndex: rowIndex + 1))
+          .value = cell?.value.toString();
     }
   }
 

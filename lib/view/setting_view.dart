@@ -43,17 +43,6 @@ class _SettingsViewState extends State<SettingsView> {
     appDataViewModel.exportingModel.androidFiles.forEach((element) {
       _androidFilesControllers.add(TextEditingController()..text = element);
     });
-
-    // for (var i = 0; i < _allLanguageConfig.length; i++) {
-    //   if (_allLanguageConfig[i].l10nPath != null) {
-    //     _translateOptionControllers[i][0].text =
-    //         _allLanguageConfig[i].l10nPath!;
-    //   }
-    //   if (_allLanguageConfig[i].androidPath != null) {
-    //     _translateOptionControllers[i][1].text =
-    //         _allLanguageConfig[i].androidPath!;
-    //   }
-    // }
   }
 
   List<Widget> _getConfigContentList() {

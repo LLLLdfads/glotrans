@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dio/dio.dart';
+import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:oktoast/oktoast.dart';
@@ -24,6 +25,30 @@ class _TranslateViewState extends State<TranslateView> {
   String? _currentSentence;
   final TextEditingController _textEditingController = TextEditingController();
 
+  // 在类的开始处添加一个 controller
+  final ScrollController _logScrollController = ScrollController();
+  final TextEditingController _logTextController = TextEditingController();
+
+  // 在需要添加日志的地方使用这个方法
+  void _appendLog(String text) {
+    _logTextController.text += '$text\n';
+    // 确保滚动到最底部
+    Future.delayed(const Duration(milliseconds: 50), () {
+      _logScrollController.animateTo(
+        _logScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _logScrollController.dispose();
+    _logTextController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,11 +62,10 @@ class _TranslateViewState extends State<TranslateView> {
   void _parseInputStrAndTranslate() {
     // 如果输入框为空或者无法解析，则不进行翻译
     if (_textEditingController.text.isEmpty) {
-      showToast("请输入");
+      showToast("未检测到输入");
       return;
     }
     // 如果无法解析输入的文本，也需要有提示
-    // 解析的键值对
     Map<String, String> keyValueMap = {};
     try {
       keyValueMap = parseInputStr(_textEditingController.text);
@@ -49,9 +73,140 @@ class _TranslateViewState extends State<TranslateView> {
       showToast("格式错误请确认");
       return;
     }
-    _appDataViewModel.switchPage(1);
-    _appDataViewModel.startTranslating(keyValueMap);
-    _appDataViewModel.keyValueMap = keyValueMap;
+    // _appDataViewModel.switchPage(1);
+    // _appDataViewModel.startTranslating(keyValueMap);
+    // _appDataViewModel.keyValueMap = keyValueMap;
+    _logTextController.clear();
+    _appDataViewModel.totalTranslateCount = keyValueMap.length;
+    _appDataViewModel.translateTakesTime = 0;
+    _showProgressDialog();
+    List<String> willDoLanStr = [];
+    for (var i = 0; i < _appDataViewModel.willDoLan.length; i++) {
+      if (_appDataViewModel.willDoLan[i]) {
+        willDoLanStr.add(
+            "${AppConst.supportLanMap.values.toList()[i]}_${AppConst.supportLanMap.keys.toList()[i]}");
+      }
+    }
+    _appDataViewModel.translatedCount = 0;
+    _appDataViewModel.stopTranslate = false;
+    _appDataViewModel.totalTranslateCount =
+        keyValueMap.length * willDoLanStr.length;
+    _appDataViewModel.startTranslateTimer();
+    _appDataViewModel.translate(keyValueMap, willDoLanStr, (String res) {
+      _appendLog(res);
+    });
+  }
+
+  void _showProgressDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 防止点击外部关闭
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SizedBox(
+              height: 270,
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    child: ClipRRect(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
+                      child: SizedBox(
+                        width: 400,
+                        height: 10,
+                        child: Selector<AppDataViewModel, int>(
+                          selector: (_, vm) => vm.translatedCount,
+                          builder: (context, translatedCount, child) {
+                            return LinearProgressIndicator(
+                              value: translatedCount /
+                                  _appDataViewModel.totalTranslateCount,
+                              backgroundColor: const Color(0xFFE8F5E9),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF4CAF50)),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        height: 57,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Selector<AppDataViewModel, int>(
+                              selector: (_, vm) => vm.translatedCount,
+                              builder: (context, translatedCount, child) {
+                                return Text(
+                                  '进度: $translatedCount/${_appDataViewModel.totalTranslateCount}',
+                                  style: const TextStyle(fontSize: 12),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 4),
+                            Selector<AppDataViewModel, int>(
+                              selector: (_, vm) => vm.translateTakesTime,
+                              builder: (context, time, child) {
+                                return Text(
+                                  '耗时: $time 秒',
+                                  style: const TextStyle(fontSize: 12),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // _appendLog('正在翻译: hello world...');
+                          // _appendLog('翻译完成: 你好世界');
+                          Navigator.of(context).pop();
+                          _appDataViewModel.translateTimer?.cancel();
+                          _appDataViewModel.stopTranslate = true;
+                        },
+                        child: const Text(
+                          '取消',
+                          style: TextStyle(color: Color(0xff347080)),
+                        ),
+                      )
+                    ],
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    height: 150, // 可以调整高度
+                    width: 400,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A2D3E), // 深色背景
+                      borderRadius: BorderRadius.circular(8),
+                      // border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    child: TextField(
+                      controller: _logTextController,
+                      scrollController: _logScrollController,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                      maxLines: null,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.fromLTRB(8, 8, 18, 8),
+                        border: InputBorder.none,
+                        hintText: '翻译进度输出...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ],
+              )),
+        );
+      },
+    );
   }
 
   @override

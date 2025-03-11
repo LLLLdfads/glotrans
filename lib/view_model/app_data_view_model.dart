@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 // import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -127,9 +128,15 @@ class AppDataViewModel extends ChangeNotifier {
   //     currentkeyValueMap.length;
   int get willTranslateCount => 0;
 
-  // 翻译耗时
+  // 翻译计时器
+  Timer? translateTimer;
   int translateTakesTime = 0;
-  Timer? _timer;
+  void startTranslateTimer() {
+    translateTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      translateTakesTime++;
+      notifyListeners();
+    });
+  }
 
   // 翻译结果
   List<List<String>> translateResult = [];
@@ -137,41 +144,6 @@ class AppDataViewModel extends ChangeNotifier {
   Map<String, String> keyValueMap = {};
 
   int currentPageViewIndex = 0;
-
-  // Locale _locale = const Locale('zh', 'CN');
-  // Locale get locale => _locale;
-
-  // set locale(Locale value) {
-  //   _locale = value;
-  //   setSystemSettingModel();
-  //   notifyListeners();
-  // }
-
-  void startTranslating(Map<String, String> keyValueMap) {
-    currentkeyValueMap = keyValueMap;
-    translating = true;
-    translateResult = [];
-    int index = 0;
-    keyValueMap.forEach((key, value) {
-      translateResult.add([index.toString(), key]);
-      index++;
-    });
-    notifyListeners();
-    _translate(keyValueMap);
-    // 开始计时
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      translateTakesTime++;
-      notifyListeners();
-    });
-  }
-
-  void stopTranslating() {
-    translating = false;
-    notifyListeners();
-    currentTranslateProgress = 0;
-    _timer?.cancel();
-    translateTakesTime = 0;
-  }
 
   void translatedProgress(int progress) {
     currentTranslateProgress = progress;
@@ -191,32 +163,37 @@ class AppDataViewModel extends ChangeNotifier {
       deeplKey: "1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx",
       targetLanguageConfigList: []);
 
-  // 解析词条，开始翻译
-  Future _translate(Map<String, String> keyValueMap) async {
-    int index = 0;
-    for (var value in keyValueMap.values) {
+  int translatedCount = 0;
+  int totalTranslateCount = 0;
+  List<List<String>> translateRes = [];
+  bool stopTranslate = false;
+
+  // 翻译
+  Future translate(Map<String, String> keyValueMap, List<String> willDoLanStr,
+      Function(String) onTranslatedAText) async {
+    onTranslatedAText(
+        "author: Dewen.Luo\nversion: 3.0\ndescription: 词条转多语言并以excel文件保存在history文件夹中\ne-mail: a3229785914@qq.com");
+    for (int i = 0; i < keyValueMap.length; i++) {
       List<String> oneLineRes = [];
-      // for (var targetLanguageConfig in currentWillTranslateLanguageList) {
-      //   String res = await translateOneLanguageTextForDev(
-      //       targetLanguageConfig.language, value, config.deeplKey);
-      //   print(res);
-      //   // oneLineRes.add(jsonDecode(res)["translations"][0]["text"]);
-      //   oneLineRes.add(res);
-      //   currentTranslateProgress += 1;
-      //   notifyListeners();
-      // }
-      translateResult[index] = [
-        index.toString(),
-        keyValueMap.keys.toList()[index],
-        ...oneLineRes
-      ];
-      print("translateResult: ${translateResult.length}");
-      index++;
-      print("翻译完成$value ");
-      notifyListeners();
+      String name = keyValueMap.keys.elementAt(i);
+      String value = keyValueMap.values.elementAt(i);
+      onTranslatedAText("开始处理'$name':'$value'");
+
+      for (int j = 0; j < willDoLanStr.length; j++) {
+        if (stopTranslate) return;
+        String lan = willDoLanStr[j];
+        String res =
+            await translateOneLanguageText(lan.split("_")[1], value, key);
+        print(res);
+        oneLineRes.add(res);
+        translatedCount++;
+        notifyListeners();
+        onTranslatedAText("${lan.padRight(15, ' ')}:$res");
+      }
+      translateRes.add(oneLineRes);
     }
-    stopTranslating();
-    saveTranslateResult();
+    onTranslatedAText("翻译完成");
+    translateTimer?.cancel();
   }
 
   // 保存翻译结果
