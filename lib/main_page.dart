@@ -46,6 +46,7 @@ class _MainPageState extends State<MainPage> {
 
   void _initTranslateResultList() {
     _appDataViewModel.getTranslateResultList();
+    _appDataViewModel.getTranslateResByPageId(0);
   }
 
   Future _initData() async {

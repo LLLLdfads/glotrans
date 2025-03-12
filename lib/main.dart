@@ -2,6 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:glo_trans/main_page.dart';
+import 'package:glo_trans/model/drift/database_service.dart';
 import 'package:glo_trans/model/settings/config_model.dart';
 import 'package:glo_trans/model/settings/export_setting_model.dart';
 import 'package:glo_trans/model/settings/system_setting_model.dart';
@@ -19,6 +20,9 @@ import 'generated/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+    // 预先初始化数据库服务
+  await DatabaseService.instance;
 
   final appDocumentDirectory =
       await path_provider.getApplicationDocumentsDirectory();

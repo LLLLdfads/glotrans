@@ -2,12 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 // import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/db/export_settings_store.dart';
 import 'package:glo_trans/db/key_store.dart';
 import 'package:glo_trans/db/system_setting_store.dart';
 import 'package:glo_trans/db/will_do_lan_store.dart';
+import 'package:glo_trans/model/drift/database_service.dart';
+import 'package:glo_trans/model/drift/translate_res_model.dart';
+import 'package:glo_trans/model/drift/translate_res_model_db.dart';
 import 'package:glo_trans/model/settings/config_model.dart';
 import 'package:glo_trans/model/settings/export_setting_model.dart';
 import 'package:glo_trans/model/settings/system_setting_model.dart';
@@ -201,6 +205,7 @@ class AppDataViewModel extends ChangeNotifier {
     }
     onTranslatedAText("翻译完成");
     translateTimer?.cancel();
+    saveTranslateToHistory(currentTranslateRes);
   }
 
   // 保存翻译结果
@@ -235,5 +240,60 @@ class AppDataViewModel extends ChangeNotifier {
     }
     print("translateResultModelList: null");
     return TranslateResultModelList(translateResultList: []);
+  }
+
+  // history_view的数据
+  List<TranslateResModel> translateHistory = [];
+
+  // 保存翻译结果
+  Future<bool> saveTranslateToHistory(List<List<String>> translateRes) async {
+    try {
+      TranslateResModel translateResModel = TranslateResModel(
+          time: DateTime.now().toString(), data: translateRes);
+
+      // 保存到数据库
+      DatabaseService databaseService = await DatabaseService.instance;
+      final id = await databaseService.saveTranslateResult(
+          TranslateResModelDBCompanion(
+              time: Value(translateResModel.time),
+              data: Value(jsonEncode(translateResModel.data))));
+
+      if (id > 0) {
+        // 保存成功，id 就是新记录的主键值
+        translateHistory.insert(0, translateResModel);
+        notifyListeners();
+        print('翻译结果保存成功，记录ID: $id');
+        return true;
+      } else {
+        print('翻译结果保存失败，返回ID: $id');
+        return false;
+      }
+    } catch (e) {
+      print('保存翻译结果时发生错误：$e');
+      return false;
+    }
+  }
+
+  // 从数据库中拿到指定页面的数据
+  Future<void> getTranslateResByPageId(int page) async {
+    DatabaseService databaseService = await DatabaseService.instance;
+    List<TranslateResModelDBData> translateResModelDBDataList =
+        await databaseService.getHistoryByPage(page);
+    List<TranslateResModel> translateResModelList =
+        translateResModelDBDataList.map((e) {
+      print("e.data: ${e.data}");
+      TranslateResModel translateResModel = TranslateResModel(
+          time: e.time,
+          data: (jsonDecode(e.data) as List)
+              .map((row) =>
+                  (row as List).map((item) => item.toString()).toList())
+              .toList());
+      return translateResModel;
+    }).toList();
+    if (translateResModelList.isNotEmpty) {
+      print("加载到数据: ${translateResModelList.length}");
+      translateHistory.addAll(translateResModelList);
+      notifyListeners();
+    }
   }
 }

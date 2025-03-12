@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glo_trans/model/drift/translate_res_model.dart';
 import 'package:glo_trans/model/translate_result_model.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +23,10 @@ class _HistoryViewState extends State<HistoryView> {
       children: [
         const SizedBox(height: 10),
         Expanded(
-          child: Selector<AppDataViewModel, TranslateResultModelList?>(
-            selector: (_, vm) => vm.translateResultModelList,
-            builder: (context, translateResultModelList, child) {
-              if (translateResultModelList == null) {
+          child: Selector<AppDataViewModel, List<TranslateResModel>>(
+            selector: (_, vm) => vm.translateHistory,
+            builder: (context, translateResModelList, child) {
+              if (translateResModelList.isEmpty) {
                 return const Center(child: Text("暂无翻译历史"));
               }
               return ListView.separated(
@@ -48,8 +49,8 @@ class _HistoryViewState extends State<HistoryView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  translateResultModelList
-                                      .translateResultList[index].time
+                                  translateResModelList[index]
+                                      .time
                                       .substring(0, 19),
                                   style: const TextStyle(
                                     color: Colors.white70,
@@ -60,10 +61,12 @@ class _HistoryViewState extends State<HistoryView> {
                                   height: 10,
                                 ),
                                 Text(
-                                  translateResultModelList
-                                      .translateResultList[index].rows
-                                      .map((e) => e[1])
-                                      .join(","),
+                                  // translateResModelList[index].data
+                                  //     .map((e) => e[1])
+                                  //     .join(","),
+                                  translateResModelList[index]
+                                      .data[0]
+                                      .toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -78,7 +81,7 @@ class _HistoryViewState extends State<HistoryView> {
                 separatorBuilder: (context, index) {
                   return const SizedBox(height: 2);
                 },
-                itemCount: translateResultModelList.translateResultList.length,
+                itemCount: translateResModelList.length,
               );
             },
           ),

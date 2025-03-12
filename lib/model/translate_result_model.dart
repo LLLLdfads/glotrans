@@ -22,7 +22,7 @@ class TranslateResultModel {
   // 翻译结果的时间戳
   @HiveField(0)
   final String time;
-  // 翻译结果的结果，表头为index，key，语言
+  // 表头为index，key，语言
   @HiveField(1)
   final List<String> header;
   // 翻译的结果，很多行，每行一个key的翻译结果

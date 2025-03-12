@@ -394,7 +394,7 @@ class _ExportViewState extends State<ExportView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(
+            const SizedBox(
           height: 10,
         ),
         Expanded(
