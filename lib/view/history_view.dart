@@ -72,6 +72,7 @@ class _HistoryViewState extends State<HistoryView> {
                 onLoading: _onLoading,
                 child: ListView.separated(
                   itemBuilder: (context, index) {
+                    var translateResModel = translateResModelList[index];
                     return Padding(
                       padding: const EdgeInsets.all(10),
                       child: GestureDetector(
@@ -85,34 +86,59 @@ class _HistoryViewState extends State<HistoryView> {
                             height: 100,
                             // 这里显示翻译时间，key，value
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 20, left: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              padding: const EdgeInsets.only(
+                                  top: 20, left: 20, right: 20),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    translateResModelList[index]
-                                        .time
-                                        .substring(0, 19),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        translateResModel.time.substring(0, 19),
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        "语言(${translateResModel.data[0].length - 2})：${translateResModelList[index].data[0].sublist(2).map((e) => e.split("_")[0]).join(",")}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        "文本(${translateResModel.data.length - 1})：${translateResModelList[index].data.map((e) => e[1]).toList().sublist(1).join(",")}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Text(
-                                    // translateResModelList[index].data
-                                    //     .map((e) => e[1])
-                                    //     .join(","),
-                                    translateResModelList[index]
-                                        .data[0]
-                                        .toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                                  Center(
+                                    child: TextButton(
+                                        onPressed: () {
+                                          appDataViewModel.currentTable =
+                                              translateResModel.data;
+                                          appDataViewModel.switchPage(1);
+                                        },
+                                        child: const Text(
+                                          "详情",
+                                          style: TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 24, 142, 36)),
+                                        )),
+                                  )
                                 ],
                               ),
                             ),
