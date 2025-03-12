@@ -72,6 +72,8 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.0.0
   path: ^1.8.0
+  # 下拉刷新数据，上拉加载更多
+  pull_to_refresh_flutter3: ^2.0.2
   
 #  macos_ui: ^2.1.9
 #  path_provider: ^2.1.3

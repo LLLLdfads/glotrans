@@ -244,7 +244,7 @@ class AppDataViewModel extends ChangeNotifier {
 
   // history_view的数据
   List<TranslateResModel> translateHistory = [];
-
+  int historyTotalPageCount = 0;
   // 保存翻译结果
   Future<bool> saveTranslateToHistory(List<List<String>> translateRes) async {
     try {
@@ -260,8 +260,8 @@ class AppDataViewModel extends ChangeNotifier {
 
       if (id > 0) {
         // 保存成功，id 就是新记录的主键值
-        translateHistory.insert(0, translateResModel);
-        notifyListeners();
+        // translateHistory.insert(0, translateResModel);
+        // notifyListeners();
         print('翻译结果保存成功，记录ID: $id');
         return true;
       } else {
@@ -293,6 +293,32 @@ class AppDataViewModel extends ChangeNotifier {
     if (translateResModelList.isNotEmpty) {
       print("加载到数据: ${translateResModelList.length}");
       translateHistory.addAll(translateResModelList);
+      historyTotalPageCount += 1;
+      notifyListeners();
+    }
+  }
+
+  // 从数据库中拿到指定页面的数据并替换当前的翻译历史的数据
+  Future<void> getTranslateResFirstPage() async {
+    DatabaseService databaseService = await DatabaseService.instance;
+    List<TranslateResModelDBData> translateResModelDBDataList =
+        await databaseService.getHistoryByPage(0);
+    List<TranslateResModel> translateResModelList =
+        translateResModelDBDataList.map((e) {
+      print("e.data: ${e.data}");
+      TranslateResModel translateResModel = TranslateResModel(
+          time: e.time,
+          data: (jsonDecode(e.data) as List)
+              .map((row) =>
+                  (row as List).map((item) => item.toString()).toList())
+              .toList());
+      return translateResModel;
+    }).toList();
+    if (translateResModelList.isNotEmpty) {
+      print("加载到数据: ${translateResModelList.length}");
+      translateHistory.clear();
+      translateHistory.addAll(translateResModelList);
+      historyTotalPageCount = 1;
       notifyListeners();
     }
   }
