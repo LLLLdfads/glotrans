@@ -392,111 +392,144 @@ class _ExportViewState extends State<ExportView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-            const SizedBox(
-          height: 10,
-        ),
-        Expanded(
-            child: Padding(
-          padding:
-              const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-          child: PlutoGrid(
-            columns: header,
-            rows: rows,
-            onLoaded: (PlutoGridOnLoadedEvent event) {
-              _stateManager = event.stateManager;
-              // // 初始化表格
-              // final newRows = <PlutoRow>[];
-
-              // for (List<String> row in _appDataViewModel.currentTable) {
-              //   if (row.length != _headerStringList.length) {
-              //     row.addAll(
-              //         List.filled(_headerStringList.length - row.length, ''));
-              //   }
-              //   newRows.add(PlutoRow(
-              //       cells: Map.fromIterables(_headerStringList,
-              //           row.map((e) => PlutoCell(value: e)))));
-              // }
-
-              // // 先清空现有行
-              // _stateManager!.removeAllRows();
-              // // 然后添加新行
-              // _stateManager!.appendRows(newRows);
-              // _stateManager!.moveScrollByRow(
-              //     PlutoMoveDirection.down, _stateManager!.rows.length - 2);
-              _applyTableData(_appDataViewModel.currentTable);
-            },
-            onChanged: (PlutoGridOnChangedEvent event) {
-              print(event);
-            },
-            configuration: const PlutoGridConfiguration(
-              style: PlutoGridStyleConfig(
-                iconColor: Colors.transparent,
-                gridBackgroundColor: Color.fromARGB(97, 255, 255, 255),
-                oddRowColor: Color.fromARGB(44, 116, 170, 192),
-                evenRowColor: Color.fromARGB(194, 224, 234, 238),
-                borderColor: Color.fromARGB(255, 255, 255, 255),
-                gridBorderColor: Colors.transparent,
-                gridBorderRadius: BorderRadius.all(Radius.circular(5.0)),
+    return Selector<AppDataViewModel, List<List<String>>>(
+        selector: (_, vm) => vm.currentTable,
+        builder: (context, currentTable, child) {
+          if (currentTable.isEmpty) {
+            return const Center(
+              child: Text(
+                "空空如也～，快去翻译吧",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
-            ),
-          ),
-        )),
-        SizedBox(
-          height: 100,
-          width: double.infinity,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _handleImportExcel,
-                  style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                          Colors.white70.withAlpha(90)),
-                      elevation: WidgetStateProperty.all<double>(0),
-                      overlayColor:
-                          WidgetStateProperty.all<Color>(Colors.white24)),
-                  child: const Text("导入excel",
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                ElevatedButton(
-                  onPressed: importProject,
-                  style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                          Colors.white70.withAlpha(90)),
-                      elevation: WidgetStateProperty.all<double>(0),
-                      overlayColor:
-                          WidgetStateProperty.all<Color>(Colors.white24)),
-                  child: const Text("导入项目",
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await exportToExcelForPGSM(_stateManager!);
+            );
+          }
+          return Column(
+            children: [
+              const SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 10, right: 10, top: 10, bottom: 10),
+                child: PlutoGrid(
+                  columns: header,
+                  rows: rows,
+                  onLoaded: (PlutoGridOnLoadedEvent event) {
+                    _stateManager = event.stateManager;
+                    // // 初始化表格
+                    // final newRows = <PlutoRow>[];
+
+                    // for (List<String> row in _appDataViewModel.currentTable) {
+                    //   if (row.length != _headerStringList.length) {
+                    //     row.addAll(
+                    //         List.filled(_headerStringList.length - row.length, ''));
+                    //   }
+                    //   newRows.add(PlutoRow(
+                    //       cells: Map.fromIterables(_headerStringList,
+                    //           row.map((e) => PlutoCell(value: e)))));
+                    // }
+
+                    // // 先清空现有行
+                    // _stateManager!.removeAllRows();
+                    // // 然后添加新行
+                    // _stateManager!.appendRows(newRows);
+                    // _stateManager!.moveScrollByRow(
+                    //     PlutoMoveDirection.down, _stateManager!.rows.length - 2);
+                    _applyTableData(_appDataViewModel.currentTable);
                   },
-                  style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                          Colors.white70.withAlpha(90)),
-                      elevation: WidgetStateProperty.all<double>(0),
-                      overlayColor:
-                          WidgetStateProperty.all<Color>(Colors.white24)),
-                  child: const Text("导出表格",
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
-                )
-              ],
-            ),
-          ),
-        )
-      ],
-    );
+                  onChanged: (PlutoGridOnChangedEvent event) {
+                    print(event);
+                  },
+                  configuration: PlutoGridConfiguration(
+                    style: PlutoGridStyleConfig(
+                      activatedColor: const Color.fromARGB(255, 42, 41, 41),
+                      activatedBorderColor:
+                          const Color.fromARGB(255, 31, 157, 216),
+                      inactivatedBorderColor:
+                          const Color.fromARGB(255, 23, 112, 153),
+                      cellColorInEditState: Colors.black.withAlpha(20),
+                      columnTextStyle: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                      cellTextStyle: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 14,
+                      ),
+                      iconColor: Colors.transparent,
+                      // gridBackgroundColor: Color.fromARGB(97, 255, 255, 255),
+                      gridBackgroundColor: Colors.white.withAlpha(10),
+
+                      oddRowColor: Colors.white.withAlpha(30),
+                      evenRowColor: Colors.white.withAlpha(20),
+                      // borderColor: Color.fromARGB(255, 255, 255, 255),
+                      borderColor: Colors.white.withAlpha(20),
+                      gridBorderColor: Colors.transparent,
+                      gridBorderRadius:
+                          const BorderRadius.all(Radius.circular(5.0)),
+                    ),
+                  ),
+                ),
+              )),
+              SizedBox(
+                height: 100,
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _handleImportExcel,
+                        style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Colors.white70.withAlpha(90)),
+                            elevation: WidgetStateProperty.all<double>(0),
+                            overlayColor:
+                                WidgetStateProperty.all<Color>(Colors.white24)),
+                        child: const Text("导入excel",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16)),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      ElevatedButton(
+                        onPressed: importProject,
+                        style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Colors.white70.withAlpha(90)),
+                            elevation: WidgetStateProperty.all<double>(0),
+                            overlayColor:
+                                WidgetStateProperty.all<Color>(Colors.white24)),
+                        child: const Text("导入项目",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16)),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await exportToExcelForPGSM(_stateManager!);
+                        },
+                        style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Colors.white70.withAlpha(90)),
+                            elevation: WidgetStateProperty.all<double>(0),
+                            overlayColor:
+                                WidgetStateProperty.all<Color>(Colors.white24)),
+                        child: const Text("导出表格",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16)),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            ],
+          );
+        });
   }
 }
