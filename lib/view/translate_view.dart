@@ -56,8 +56,8 @@ class _TranslateViewState extends State<TranslateView> {
     // 预制翻译文本，方便调试
     _appDataViewModel.currentSentence =
         // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包","text_key":"钥匙","text_apple":"苹果","text_orange":"橘子","text_banana":"香蕉","text_onion":"洋葱","text_watermelon":"西瓜"';
-        // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包"';
-        '"text_window":"窗户","text_table":"桌子"';
+        '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包"';
+    // '"text_window":"窗户","text_table":"桌子"';
     _currentSentence = _appDataViewModel.currentSentence;
     _textEditingController.text = _currentSentence ?? "";
     setState(() {});

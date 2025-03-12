@@ -81,6 +81,13 @@ class TranslateDatabase extends _$TranslateDatabase {
         .get();
     return (totalCount.length / pageSize).ceil();
   }
+
+  // 根据id删除某个翻译结果
+  Future<int> deleteTranslateResult(int id) async {
+    int success =
+        await (delete(translateResModelDB)..where((t) => t.id.equals(id))).go();
+    return success;
+  }
 }
 
 LazyDatabase _openConnection() {

@@ -283,6 +283,7 @@ class AppDataViewModel extends ChangeNotifier {
         translateResModelDBDataList.map((e) {
       print("e.data: ${e.data}");
       TranslateResModel translateResModel = TranslateResModel(
+          id: e.id,
           time: e.time,
           data: (jsonDecode(e.data) as List)
               .map((row) =>
@@ -307,6 +308,7 @@ class AppDataViewModel extends ChangeNotifier {
         translateResModelDBDataList.map((e) {
       print("e.data: ${e.data}");
       TranslateResModel translateResModel = TranslateResModel(
+          id: e.id,
           time: e.time,
           data: (jsonDecode(e.data) as List)
               .map((row) =>
@@ -321,5 +323,13 @@ class AppDataViewModel extends ChangeNotifier {
       historyTotalPageCount = 1;
       notifyListeners();
     }
+  }
+
+  // 根据id删除某个翻译结果
+  Future<int> deleteTranslateRes(int id) async {
+    DatabaseService databaseService = await DatabaseService.instance;
+    int success = await databaseService.deleteTranslateResult(id);
+    notifyListeners();
+    return success;
   }
 }

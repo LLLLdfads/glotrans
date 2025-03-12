@@ -34,4 +34,8 @@ class DatabaseService {
   Future<void> cleanOldRecords(int keepCount) {
     return database.cleanOldRecords(keepCount);
   }
+  // 根据id删除某个翻译结果
+  Future<int> deleteTranslateResult(int id) {
+    return database.deleteTranslateResult(id);
+  }
 }
