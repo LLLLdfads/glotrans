@@ -214,6 +214,7 @@ class _ExportViewState extends State<ExportView> {
       listStringRows.add(row.map((e) => e?.value.toString() ?? '').toList());
     }
     _appDataViewModel.importExcelReplace(listStringRows);
+    _applyTableData(_appDataViewModel.currentTable);
   }
 
   int findInsertLineIndex(List<String> lines, String flag, bool insertBefore) {

@@ -29,6 +29,8 @@ class _TranslateViewState extends State<TranslateView> {
   final ScrollController _logScrollController = ScrollController();
   final TextEditingController _logTextController = TextEditingController();
 
+  PlutoGridStateManager? _stateManager;
+
   // 在需要添加日志的地方使用这个方法
   void _appendLog(String text) {
     _logTextController.text += '$text\n';
@@ -54,9 +56,9 @@ class _TranslateViewState extends State<TranslateView> {
     super.initState();
     _appDataViewModel = context.read<AppDataViewModel>();
     // 预制翻译文本，方便调试
-    _appDataViewModel.currentSentence =
-        // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包","text_key":"钥匙","text_apple":"苹果","text_orange":"橘子","text_banana":"香蕉","text_onion":"洋葱","text_watermelon":"西瓜"';
-        '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包"';
+    // _appDataViewModel.currentSentence =
+    // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包","text_key":"钥匙","text_apple":"苹果","text_orange":"橘子","text_banana":"香蕉","text_onion":"洋葱","text_watermelon":"西瓜"';
+    // '"text_window":"窗户","text_table":"桌子","text_milk":"牛奶","text_bread":"面包"';
     // '"text_window":"窗户","text_table":"桌子"';
     _currentSentence = _appDataViewModel.currentSentence;
     _textEditingController.text = _currentSentence ?? "";
@@ -245,17 +247,72 @@ class _TranslateViewState extends State<TranslateView> {
 
   @override
   Widget build(BuildContext context) {
+    AppDataViewModel vm = context.watch<AppDataViewModel>();
     return Column(
       children: [
-        const SizedBox(
+        SizedBox(
           width: double.infinity,
-          height: 50,
-          child: Row(
-            children: [
-              SizedBox(
-                width: 20,
-              ),
-            ],
+          height: 100,
+          child: Center(
+            child: Selector<AppDataViewModel, int>(
+              selector: (_, vm) => vm.inputMode,
+              builder: (context, inputMode, child) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0))),
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              vm.inputMode == 0
+                                  ? Colors.white70.withAlpha(90)
+                                  : Colors.transparent),
+                        ),
+                        onPressed: () {
+                          if (_appDataViewModel.currentSentence == null ||
+                              _appDataViewModel.currentSentence == "") {
+                            vm.setInputMode(0);
+                            return;
+                          }
+
+                          // 如果无法解析输入的文本，也需要有提示
+                          Map<String, String> keyValueMap = {};
+                          try {
+                            keyValueMap = parseInputStr(
+                                _appDataViewModel.currentSentence!);
+                          } catch (e) {
+                            showToast("解析失败");
+                            return;
+                          }
+                          vm.setInputMode(0);
+                        },
+                        child: const Text(
+                          "表格输入",
+                          style: TextStyle(color: Colors.white),
+                        )),
+                    TextButton(
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0))),
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              vm.inputMode == 1
+                                  ? Colors.white70.withAlpha(90)
+                                  : Colors.transparent),
+                        ),
+                        onPressed: () {
+                          vm.setInputMode(1);
+                          _textEditingController.text =
+                              _appDataViewModel.currentSentence ?? "";
+                        },
+                        child: const Text(
+                          "文本输入",
+                          style: TextStyle(color: Colors.white),
+                        )),
+                  ],
+                );
+              },
+            ),
           ),
         ),
         Expanded(
@@ -263,50 +320,209 @@ class _TranslateViewState extends State<TranslateView> {
             children: [
               Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 10, right: 10, top: 100, bottom: 20),
-                    child: SizedBox(
-                      height: 250.0,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: <Widget>[
-                          SizedBox(
-                            height: 150,
-                            width: 1000, // your scroll width
-                            child: TextFormField(
-                              controller: _textEditingController,
-                              onChanged: (currentText) {
-                                AppDataViewModel appDataViewModel =
-                                    context.read<AppDataViewModel>();
-                                appDataViewModel.currentSentence = currentText;
-                                print("done");
-                              },
-                              keyboardType: TextInputType.multiline,
-                              expands: true,
-                              maxLines: null,
-                              cursorColor: Colors.blue,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    '输入翻译文本键值对，如：\n"text_hello_world": "你好，世界",\n"text_china": "中国",\n...',
-                                hintStyle: TextStyle(
-                                    color: Colors.white24, fontSize: 18),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Colors.white24), // 未聚焦时下划线的颜色
+                  Selector<AppDataViewModel, int>(
+                    selector: (_, vm) => vm.inputMode,
+                    builder: (context, inputMode, child) {
+                      if (inputMode == 0) {
+                        List<PlutoRow> rows = [];
+                        if (_appDataViewModel.currentSentence != null &&
+                            _appDataViewModel.currentSentence != "") {
+                          Map<String, String> keyValueMap =
+                              parseInputStr(_appDataViewModel.currentSentence!);
+
+                          for (var key in keyValueMap.keys) {
+                            rows.add(PlutoRow(cells: {
+                              'key': PlutoCell(value: key),
+                              'value': PlutoCell(value: keyValueMap[key]!),
+                            }));
+                          }
+                        }
+
+                        rows.add(PlutoRow(cells: {
+                          'key': PlutoCell(value: ''),
+                          'value': PlutoCell(value: ''),
+                        }));
+
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                              left: 10, right: 10, top: 0, bottom: 20),
+                          child: SizedBox(
+                            height: 350,
+                            child: PlutoGrid(
+                              columns: <PlutoColumn>[
+                                PlutoColumn(
+                                  width: 289,
+                                  backgroundColor: Colors.white.withAlpha(20),
+                                  textAlign: PlutoColumnTextAlign.center,
+                                  titleTextAlign: PlutoColumnTextAlign.center,
+                                  enableContextMenu: false,
+                                  title: '键',
+                                  field: 'key',
+                                  type: PlutoColumnType.text(),
                                 ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Colors.blue), // 聚焦时下划线的颜色
+                                PlutoColumn(
+                                  width: 289,
+                                  backgroundColor: Colors.white.withAlpha(20),
+                                  textAlign: PlutoColumnTextAlign.center,
+                                  titleTextAlign: PlutoColumnTextAlign.center,
+                                  enableContextMenu: false,
+                                  title: '值',
+                                  field: 'value',
+                                  type: PlutoColumnType.text(),
+                                ),
+                              ],
+                              rows: rows,
+                              onLoaded: (PlutoGridOnLoadedEvent event) {
+                                _stateManager = event.stateManager;
+                                // // 初始化表格
+                                // final newRows = <PlutoRow>[];
+
+                                // for (List<String> row in _appDataViewModel.currentTable) {
+                                //   if (row.length != _headerStringList.length) {
+                                //     row.addAll(
+                                //         List.filled(_headerStringList.length - row.length, ''));
+                                //   }
+                                //   newRows.add(PlutoRow(
+                                //       cells: Map.fromIterables(_headerStringList,
+                                //           row.map((e) => PlutoCell(value: e)))));
+                                // }
+
+                                // // 先清空现有行
+                                // _stateManager!.removeAllRows();
+                                // // 然后添加新行
+                                // _stateManager!.appendRows(newRows);
+                                // _stateManager!.moveScrollByRow(
+                                //     PlutoMoveDirection.down, _stateManager!.rows.length - 2);
+                                // _applyTableData(_appDataViewModel.currentTable);
+                              },
+                              onChanged: (PlutoGridOnChangedEvent event) {
+                                print(event);
+                                // 当前行数量
+                                int currentRowCount =
+                                    _stateManager!.rows.length;
+                                // 如果在之后一行有新的值，那么再添加一行
+                                if (event.row.cells['value']!.value != '' ||
+                                    event.row.cells['key']!.value != '') {
+                                  // 如果最后一行键值对都是"","",那么不添加行
+                                  if (_stateManager!.rows[currentRowCount - 1]
+                                              .cells['key']!.value !=
+                                          '' &&
+                                      _stateManager!.rows[currentRowCount - 1]
+                                              .cells['value']!.value !=
+                                          '') {
+                                    _stateManager!.appendRows([
+                                      PlutoRow(cells: {
+                                        'key': PlutoCell(value: ''),
+                                        'value': PlutoCell(value: ''),
+                                      })
+                                    ]);
+                                  }
+                                }
+                                // 状态管理中的数据也要变一下
+                                // step1 先把rows中key和value都为空或“”的行去除
+                                Map<String, String> keyValueMap = {};
+                                _stateManager!.rows.forEach((row) {
+                                  if (row.cells['key']!.value == '' &&
+                                      row.cells['value']!.value == '') {
+                                  } else {
+                                    keyValueMap[row.cells['key']!.value] =
+                                        row.cells['value']!.value;
+                                  }
+                                });
+                                _appDataViewModel.currentSentence = keyValueMap
+                                    .entries
+                                    .map((e) => "\"${e.key}\":\"${e.value}\"")
+                                    .join(',');
+                              },
+                              configuration: PlutoGridConfiguration(
+                                style: PlutoGridStyleConfig(
+                                  activatedColor:
+                                      const Color.fromARGB(255, 42, 41, 41),
+                                  activatedBorderColor:
+                                      const Color.fromARGB(255, 31, 157, 216),
+                                  inactivatedBorderColor:
+                                      const Color.fromARGB(255, 23, 112, 153),
+                                  cellColorInEditState:
+                                      Colors.black.withAlpha(20),
+                                  columnTextStyle: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                  cellTextStyle: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 14,
+                                  ),
+                                  iconColor: Colors.transparent,
+                                  gridBackgroundColor:
+                                      Colors.white.withAlpha(5),
+                                  // gridBackgroundColor: Colors.transparent,
+                                  oddRowColor: Colors.transparent,
+                                  evenRowColor: Colors.transparent,
+                                  // borderColor: Color.fromARGB(255, 255, 255, 255),
+                                  borderColor: Colors.white.withAlpha(20),
+                                  gridBorderColor: Colors.transparent,
+                                  gridBorderRadius: const BorderRadius.all(
+                                      Radius.circular(5.0)),
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                            left: 10, right: 10, top: 100, bottom: 20),
+                        child: SizedBox(
+                          height: 250,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: <Widget>[
+                              SizedBox(
+                                height: 150,
+                                width: 1000, // your scroll width
+                                child: TextFormField(
+                                  controller: _textEditingController,
+                                  onChanged: (currentText) {
+                                    AppDataViewModel appDataViewModel =
+                                        context.read<AppDataViewModel>();
+                                    appDataViewModel.currentSentence =
+                                        _textEditingController.text;
+                                    print("onchange done");
+                                  },
+                                  onEditingComplete: () {
+                                    AppDataViewModel appDataViewModel =
+                                        context.read<AppDataViewModel>();
+                                    appDataViewModel.currentSentence =
+                                        _textEditingController.text;
+                                    print("onEditingComplete done");
+                                  },
+                                  keyboardType: TextInputType.multiline,
+                                  expands: true,
+                                  maxLines: null,
+                                  cursorColor: Colors.blue,
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 18),
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        '输入翻译文本键值对，如：\n"text_hello_world": "你好，世界",\n"text_china": "中国",\n...',
+                                    hintStyle: TextStyle(
+                                        color: Colors.white24, fontSize: 18),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: Colors.white24), // 未聚焦时下划线的颜色
+                                    ),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: Colors.blue), // 聚焦时下划线的颜色
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   ElevatedButton(
                     onPressed: _parseInputStrAndTranslate,
@@ -365,11 +581,6 @@ class _HState extends State<H> {
     'Authorization': 'DeepL-Auth-Key 1e6e86dd-797b-4fc7-aaf2-ab6efc120ea9:fx',
     'Content-Type': 'application/json',
   };
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {

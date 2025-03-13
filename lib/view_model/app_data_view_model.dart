@@ -223,6 +223,7 @@ class AppDataViewModel extends ChangeNotifier {
   // 导入excel，替换当前的表格数据值
   void importExcelReplace(List<List<String>> excelData) {
     translateResult = excelData;
+    currentTable = excelData;
     notifyListeners();
   }
 
@@ -331,5 +332,12 @@ class AppDataViewModel extends ChangeNotifier {
     int success = await databaseService.deleteTranslateResult(id);
     notifyListeners();
     return success;
+  }
+
+  // 翻译页面·输入模式
+  int inputMode = 0;
+  void setInputMode(int mode) {
+    inputMode = mode;
+    notifyListeners();
   }
 }
