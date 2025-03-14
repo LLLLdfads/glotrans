@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:isolate';
 
+import 'package:excel/excel.dart' as e;
 import 'package:flutter/material.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
@@ -30,6 +32,26 @@ class _MoreViewState extends State<MoreView> {
   void initData() {
     _appDataViewModel = context.read<AppDataViewModel>();
     _appDataViewModel.initXLogPrivateKey();
+  }
+
+  /// 导入excel,替换状态管理中的表格
+  void _handleImportExcel() async {
+    print("导入excel");
+    String? excelPath = await pickFile("xlsx");
+    if (excelPath == null) {
+      return;
+    }
+    var excel = e.Excel.decodeBytes(File(excelPath).readAsBytesSync());
+    print('选择文件：$excelPath');
+    List<List<e.Data?>> rows = excel.sheets["Sheet1"]!.rows;
+    List<List<String>> listStringRows = [];
+    print("内容：");
+    for (var row in rows) {
+      print(row.map((e) => e?.value).toList());
+      listStringRows.add(row.map((e) => e?.value.toString() ?? '').toList());
+    }
+    _appDataViewModel.importExcelReplace(listStringRows);
+    _appDataViewModel.switchPage(1);
   }
 
   Future<void> _handleXLogFile(String filePath, String privateKey) async {
@@ -373,6 +395,9 @@ class _MoreViewState extends State<MoreView> {
           );
         },
       );
+    } else if (index == 1) {
+      // 功能2，导入excel
+      _handleImportExcel();
     } else if (index == 6) {
       // 功能6，生成二维码
       showDialog(

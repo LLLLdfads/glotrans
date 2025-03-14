@@ -212,14 +212,6 @@ Future decodeMarsLog(List<dynamic> args) async {
   sendPort.send("done!");
 }
 
-// Future<void> decodeMarsLog(String privateKey, String filePath) async {
-//   // 85472b071be23389aa87037b3e2fabc2ab6bcb67c7bee3bf5bf7d0decf7987ff
-//   var decoder = MarsLogDecoder(privateKey);
-//   await decoder.decodeFile(filePath, '$filePath.log');
-//   await decoder.decodeFile(filePath, '$filePath.log');
-//   await decoder.decodeFile(filePath, '$filePath.log');
-// }
-
 class MarsLogDecoder {
   // 魔数常量定义
   static const int magicNoCompressStart = 0x03;

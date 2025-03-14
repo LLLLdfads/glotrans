@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:glo_trans/app_const.dart';
 import 'package:glo_trans/utils.dart';
@@ -21,45 +20,7 @@ class _ExportViewState extends State<ExportView> {
   PlutoGridStateManager? _stateManager;
   final List<String> _headerStringList = [];
 
-  final List<PlutoColumn> header = <PlutoColumn>[
-    // PlutoColumn(
-    //   width: 70,
-    //   textAlign: PlutoColumnTextAlign.center,
-    //   titleTextAlign: PlutoColumnTextAlign.center,
-    //   enableContextMenu: false,
-    //   title: 'index',
-    //   field: 'index',
-    //   type: PlutoColumnType.text(),
-    // ),
-    // PlutoColumn(
-    //   titleTextAlign: PlutoColumnTextAlign.center,
-    //   enableContextMenu: false,
-    //   title: 'Name',
-    //   field: 'name',
-    //   type: PlutoColumnType.text(),
-    // ),
-    // PlutoColumn(
-    //   titleTextAlign: PlutoColumnTextAlign.center,
-    //   enableContextMenu: false,
-    //   title: '简体中文',
-    //   field: 'zh',
-    //   type: PlutoColumnType.text(),
-    // ),
-    // PlutoColumn(
-    //   titleTextAlign: PlutoColumnTextAlign.center,
-    //   enableContextMenu: false,
-    //   title: '繁体中文',
-    //   field: 'tw',
-    //   type: PlutoColumnType.text(),
-    // ),
-    // PlutoColumn(
-    //   titleTextAlign: PlutoColumnTextAlign.center,
-    //   enableContextMenu: false,
-    //   title: '英语',
-    //   field: 'en',
-    //   type: PlutoColumnType.text(),
-    // ),
-  ];
+  final List<PlutoColumn> header = <PlutoColumn>[];
 
   final List<PlutoRow> rows = [
     // PlutoRow(
@@ -195,26 +156,6 @@ class _ExportViewState extends State<ExportView> {
     _stateManager!.appendRows(newRows);
     _stateManager!.moveScrollByRow(
         PlutoMoveDirection.down, _stateManager!.rows.length - 2);
-  }
-
-  /// 导入excel,替换状态管理中的表格
-  void _handleImportExcel() async {
-    print("导入excel");
-    String? excelPath = await pickFile("xlsx");
-    if (excelPath == null) {
-      return;
-    }
-    var excel = Excel.decodeBytes(File(excelPath).readAsBytesSync());
-    print('选择文件：$excelPath');
-    List<List<Data?>> rows = excel.sheets["Sheet1"]!.rows;
-    List<List<String>> listStringRows = [];
-    print("内容：");
-    for (var row in rows) {
-      print(row.map((e) => e?.value).toList());
-      listStringRows.add(row.map((e) => e?.value.toString() ?? '').toList());
-    }
-    _appDataViewModel.importExcelReplace(listStringRows);
-    _applyTableData(_appDataViewModel.currentTable);
   }
 
   int findInsertLineIndex(List<String> lines, String flag, bool insertBefore) {
@@ -481,21 +422,6 @@ class _ExportViewState extends State<ExportView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton(
-                        onPressed: _handleImportExcel,
-                        style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                                Colors.white70.withAlpha(90)),
-                            elevation: WidgetStateProperty.all<double>(0),
-                            overlayColor:
-                                WidgetStateProperty.all<Color>(Colors.white24)),
-                        child: const Text("导入excel",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 16)),
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
                       ElevatedButton(
                         onPressed: importProject,
                         style: ButtonStyle(
