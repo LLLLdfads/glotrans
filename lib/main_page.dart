@@ -7,6 +7,7 @@ import 'package:glo_trans/model/target_language_config_model.dart';
 import 'package:glo_trans/service/config_store.dart';
 import 'package:glo_trans/view/export_view.dart';
 import 'package:glo_trans/view/history_view.dart';
+import 'package:glo_trans/view/more_view.dart';
 import 'package:glo_trans/view/setting_view.dart';
 import 'package:glo_trans/view/translate_view.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
@@ -107,7 +108,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
       ),
-      // color: Colors.red,
+      // color: Colors.red,x
     );
   }
 
@@ -125,6 +126,7 @@ class _MainPageState extends State<MainPage> {
               const ExportView(),
               const SettingsView(),
               const HistoryView(),
+              const MoreView(),
             ][currentPageViewIndex];
           }),
     );
@@ -172,6 +174,13 @@ class _MainPageState extends State<MainPage> {
                   icon: FontAwesomeIcons.clockRotateLeft,
                   onTap: _handleOptionItemTap,
                   index: 3,
+                ),
+                OptionItem(
+                  title: "更多功能",
+                  selected: _currentOptionIndex == 4,
+                  icon: FontAwesomeIcons.ellipsis,
+                  onTap: _handleOptionItemTap,
+                  index: 4,
                 ),
               ],
             ),

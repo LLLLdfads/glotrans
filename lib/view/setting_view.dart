@@ -714,7 +714,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
       // 密钥输入，这应该是一个密码输入框
       _buildSettingItemContent(
-          title: "deepl密钥",
+          title: "密钥",
           child: SizedBox(
             height: 20,
             width: 200,
