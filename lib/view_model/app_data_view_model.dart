@@ -9,6 +9,7 @@ import 'package:glo_trans/db/export_settings_store.dart';
 import 'package:glo_trans/db/key_store.dart';
 import 'package:glo_trans/db/system_setting_store.dart';
 import 'package:glo_trans/db/will_do_lan_store.dart';
+import 'package:glo_trans/db/xlog_private_key_store.dart';
 import 'package:glo_trans/model/drift/database_service.dart';
 import 'package:glo_trans/model/drift/translate_res_model.dart';
 import 'package:glo_trans/model/drift/translate_res_model_db.dart';
@@ -147,7 +148,7 @@ class AppDataViewModel extends ChangeNotifier {
 
   Map<String, String> keyValueMap = {};
 
-  int currentPageViewIndex = 0;
+  int currentPageViewIndex = 4;
 
   void translatedProgress(int progress) {
     currentTranslateProgress = progress;
@@ -339,5 +340,20 @@ class AppDataViewModel extends ChangeNotifier {
   void setInputMode(int mode) {
     inputMode = mode;
     notifyListeners();
+  }
+
+  // 更多功能·xlog 私钥
+  String xlogPrivateKey = "";
+  void setXLogPrivateKey(String key) {
+    xlogPrivateKey = key;
+    XLogPrivateKeyStore.saveXLogPrivateKey(key);
+  }
+
+  // 更多功能·xlog 私钥
+  Future<void> initXLogPrivateKey() async {
+    String? xlogPrivateKeyRes = await XLogPrivateKeyStore.getXLogPrivateKey();
+    if (xlogPrivateKeyRes != null) {
+      xlogPrivateKey = xlogPrivateKeyRes;
+    }
   }
 }

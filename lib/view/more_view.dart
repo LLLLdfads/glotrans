@@ -1,5 +1,12 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
+import 'package:glo_trans/utils.dart';
+import 'package:glo_trans/view_model/app_data_view_model.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 
 class MoreView extends StatefulWidget {
   const MoreView({super.key});
@@ -10,14 +17,363 @@ class MoreView extends StatefulWidget {
 
 class _MoreViewState extends State<MoreView> {
   int currentIndex = 0;
+
+  late AppDataViewModel _appDataViewModel;
+
   @override
   void initState() {
     super.initState();
+    initData();
     _buildItems();
   }
 
+  void initData() {
+    _appDataViewModel = context.read<AppDataViewModel>();
+    _appDataViewModel.initXLogPrivateKey();
+  }
+
+  Future<void> _handleXLogFile(String filePath, String privateKey) async {
+    // 显示解析中对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: const Color(0xFF2A2D3E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF3E4396),
+                ),
+              ),
+              SizedBox(width: 16),
+              Text(
+                '正在解析文件...',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    try {
+      ReceivePort? receivePort = ReceivePort();
+
+      Isolate.spawn(
+          decodeMarsLog, [privateKey, filePath, receivePort.sendPort]);
+
+      receivePort.listen((message) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // 关闭解析中对话框
+        dismissAllToast(showAnim: true);
+
+        // 显示解析完成对话框
+        showDialog(
+          context: context,
+          builder: (_) => Dialog(
+            backgroundColor: const Color(0xFF2A2D3E),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: Color(0xFF3E4396),
+                    size: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '解析完成',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    // '文件 $fileName 已成功解析',
+                    '已成功解析',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        receivePort.close();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // 关闭解析中对话框
+      dismissAllToast(showAnim: true);
+
+      // 显示错误对话框
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          backgroundColor: const Color(0xFF2A2D3E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '解析失败',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  e.toString(),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('关闭'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   _handleItemsClick(int index) {
-    if (index == 6) {
+    if (index == 0) {
+      // 功能1，解析xlog
+      showDialog(
+        context: context,
+        builder: (_) {
+          TextEditingController privateKeyController = TextEditingController();
+          privateKeyController.text = _appDataViewModel.xlogPrivateKey;
+          String? selectedFilePath;
+          String fileName = '';
+          bool hasFile = false;
+          bool isDragging = false;
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return Dialog(
+                backgroundColor: const Color(0xFF2A2D3E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  width: 400,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 标题
+                      const Text(
+                        '解析 XLog 文件',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // 私钥输入区域
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 48, // 设置固定高度
+                              child: TextField(
+                                controller: privateKeyController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: '输入解密私钥',
+                                  hintStyle:
+                                      const TextStyle(color: Colors.white38),
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            height: 48, // 设置固定高度
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final privateKey = privateKeyController.text;
+                                if (privateKey.isEmpty) {
+                                  showToast("请输入私钥");
+                                  return;
+                                }
+                                // 检查文件selectedFilePath
+                                if (selectedFilePath == null) {
+                                  showToast("请选择文件");
+                                  return;
+                                }
+                                // 检查文件后缀
+                                if (!selectedFilePath!.endsWith('.xlog')) {
+                                  showToast("仅限xlog文件");
+                                  return;
+                                }
+                                _appDataViewModel.setXLogPrivateKey(privateKey);
+                                // 移除所有toast后再关闭对话框
+                                Navigator.of(context).pop(); // 关闭当前对话框
+                                _handleXLogFile(
+                                    selectedFilePath!, privateKey); // 开始解析
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3E4396),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('开始解析'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // 拖拽区域
+                      DropTarget(
+                        onDragDone: (detail) async {
+                          selectedFilePath = detail.files.first.path;
+                          // 拖拽的文件后缀必须是xlog
+                          if (selectedFilePath == null ||
+                              !selectedFilePath!.endsWith('.xlog')) {
+                            showToast("仅限xlog文件");
+                            return;
+                          }
+                          setDialogState(() {
+                            isDragging = false;
+                            hasFile = true;
+                            fileName = detail.files.first.name;
+                          });
+                        },
+                        onDragEntered: (detail) {
+                          setDialogState(() => isDragging = true);
+                        },
+                        onDragExited: (detail) {
+                          setDialogState(() => isDragging = false);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: double.infinity,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: (isDragging
+                                    ? const Color(0xFF3E4396)
+                                    : Colors.black)
+                                .withOpacity(isDragging ? 0.1 : 0.2),
+                            border: Border.all(
+                              color: isDragging
+                                  ? const Color(0xFF3E4396)
+                                  : Colors.white24,
+                              width: 2,
+                              style: BorderStyle.solid,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                hasFile
+                                    ? Icons.check_circle
+                                    : Icons.upload_file,
+                                size: 40,
+                                color: hasFile
+                                    ? const Color(0xFF3E4396)
+                                    : (isDragging
+                                        ? const Color(0xFF3E4396)
+                                        : Colors.white38),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                hasFile ? fileName : '拖拽文件到这里',
+                                style: TextStyle(
+                                  color: hasFile
+                                      ? const Color(0xFF3E4396)
+                                      : (isDragging
+                                          ? const Color(0xFF3E4396)
+                                          : Colors.white38),
+                                  fontSize: 16,
+                                ),
+                              ),
+                              if (!hasFile) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  '仅支持 .xlog 文件',
+                                  style: TextStyle(
+                                    color: Colors.white38.withOpacity(0.5),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else if (index == 6) {
       // 功能6，生成二维码
       showDialog(
         context: context,

@@ -75,7 +75,13 @@ dependencies:
   # 下拉刷新数据，上拉加载更多
   pull_to_refresh_flutter3: ^2.0.2
   native_context_menu: ^0.2.2+5
+  # 二维码
   qr_flutter: ^4.1.0
+  # 拖拽文件
+  desktop_drop: ^0.5.0
+  # 解析日志相关
+  archive: ^3.3.0
+  pointycastle: ^3.6.0
   
 #  macos_ui: ^2.1.9
 #  path_provider: ^2.1.3
