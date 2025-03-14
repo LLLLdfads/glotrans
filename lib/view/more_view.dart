@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'package:excel/excel.dart' as e;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glo_trans/utils.dart';
 import 'package:glo_trans/view_model/app_data_view_model.dart';
 import 'package:oktoast/oktoast.dart';
@@ -52,6 +53,72 @@ class _MoreViewState extends State<MoreView> {
     }
     _appDataViewModel.importExcelReplace(listStringRows);
     _appDataViewModel.switchPage(1);
+  }
+
+  // 获取ipv4
+  Future<void> _getIpv4() async {
+    String ipv4 = "";
+    // 内网ip
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        if (addr.address.split(".").length == 4) {
+          ipv4 = addr.address;
+        }
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: const Color(0xFF2A2D3E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '本机IP地址',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SelectableText(
+                ipv4,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: ipv4));
+                      showToast("已复制到剪贴板");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3E4396),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('复制'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _handleXLogFile(String filePath, String privateKey) async {
@@ -398,6 +465,9 @@ class _MoreViewState extends State<MoreView> {
     } else if (index == 1) {
       // 功能2，导入excel
       _handleImportExcel();
+    } else if (index == 5) {
+      // 功能5，查询本机ip
+      _getIpv4();
     } else if (index == 6) {
       // 功能6，生成二维码
       showDialog(
