@@ -891,7 +891,7 @@ class _MapDialogState extends State<MapDialog> {
                             if (details.pointerCount >= 2) {
                               // 计算新的缩放比例
                               final newScale =
-                                  (startScale * details.scale).clamp(0.1, 20.0);
+                                  (startScale * details.scale).clamp(0.1, 50.0);
 
                               // 获取缩放的焦点
                               final focalPoint = details.localFocalPoint;
@@ -906,8 +906,7 @@ class _MapDialogState extends State<MapDialog> {
 
                               // 应用缩放和平移
                               scale = newScale;
-                              offset = newOffset +
-                                  (focalPointDelta * 2.0); // 增加平移幅度到2.0
+                              offset = newOffset + (focalPointDelta * 2.0);
                             }
                           });
                         },
