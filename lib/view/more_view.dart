@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'dart:math';
 
 import 'package:excel/excel.dart' as e;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glo_trans/utils.dart';
@@ -749,7 +750,8 @@ class MapDialog extends StatefulWidget {
 }
 
 class _MapDialogState extends State<MapDialog> {
-  final TextEditingController _dataController = TextEditingController();
+  final String defaultFilePath =
+      "/Users/dewen/Desktop/glotrans/coordinates.json";
   List<List<Point>> points = [];
   double minX = 0, maxX = 0, minY = 0, maxY = 0;
   double scale = 1.0;
@@ -757,10 +759,16 @@ class _MapDialogState extends State<MapDialog> {
   double startScale = 1.0;
   Offset startOffset = Offset.zero;
   Offset? dragStartPoint;
+  double strokeWidth = 0.1;
 
-  void _parseData() {
+  void _loadData() {
     try {
-      final data = jsonDecode(_dataController.text) as List;
+      final file = File(defaultFilePath);
+      if (!file.existsSync()) {
+        showToast('文件不存在');
+        return;
+      }
+      final data = jsonDecode(file.readAsStringSync()) as List;
       points = [];
 
       // 重置边界值
@@ -791,13 +799,10 @@ class _MapDialogState extends State<MapDialog> {
     }
   }
 
-  void _clearData() {
-    setState(() {
-      _dataController.clear();
-      points.clear();
-      scale = 1.0;
-      offset = Offset.zero;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
   @override
@@ -805,100 +810,134 @@ class _MapDialogState extends State<MapDialog> {
     return Dialog(
       backgroundColor: const Color(0xFF2A2D3E),
       child: Container(
-        width: 800,
-        height: 600,
+        width: 1000,
+        height: 800,
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+            // 顶部工具栏
             Row(
               children: [
+                // 线段粗细控制
+                const Text('线段粗细:', style: TextStyle(color: Colors.white)),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: TextField(
-                    controller: _dataController,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText:
-                          '输入坐标点数据 [{"longitude": x, "latitude": y}, ...]',
-                      hintStyle: const TextStyle(color: Colors.white38),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                  child: Slider(
+                    value: strokeWidth,
+                    min: 0.01,
+                    max: 1.0,
+                    divisions: 99,
+                    activeColor: const Color(0xFF3E4396),
+                    inactiveColor: Colors.white24,
+                    onChanged: (value) {
+                      setState(() {
+                        strokeWidth = value;
+                      });
+                    },
                   ),
                 ),
+                SizedBox(
+                  width: 50,
+                  child: Text(
+                    '${strokeWidth.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                // 操作按钮
+                ElevatedButton(
+                  onPressed: () async {
+                    String? filePath = await pickFile("json");
+                    if (filePath != null) {
+                      // 复制选择的文件到默认路径
+                      File(filePath).copySync(defaultFilePath);
+                      _loadData();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3E4396),
+                  ),
+                  child: const Text('选择文件'),
+                ),
                 const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _parseData,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3E4396),
-                      ),
-                      child: const Text('解析数据'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _clearData,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      child: const Text('清空数据'),
-                    ),
-                  ],
+                ElevatedButton(
+                  onPressed: _loadData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3E4396),
+                  ),
+                  child: const Text('刷新'),
                 ),
               ],
             ),
             const SizedBox(height: 24),
+            // 地图显示区域
             Expanded(
               child: points.isEmpty
                   ? const Center(
                       child: Text(
-                        '请输入数据',
+                        '请选择或刷新数据',
                         style: TextStyle(color: Colors.white38),
                       ),
                     )
-                  : Listener(
-                      onPointerDown: (details) {
-                        dragStartPoint = details.localPosition;
-                        startOffset = offset;
-                      },
-                      onPointerMove: (details) {
-                        if (dragStartPoint != null) {
-                          setState(() {
-                            offset = startOffset +
-                                (details.localPosition - dragStartPoint!);
-                          });
-                        }
-                      },
-                      onPointerUp: (details) {
-                        dragStartPoint = null;
-                      },
+                  : MouseRegion(
+                      cursor: SystemMouseCursors.grab,
                       child: GestureDetector(
                         onScaleStart: (details) {
                           startScale = scale;
+                          startOffset = offset;
                         },
                         onScaleUpdate: (details) {
-                          if (details.scale != 1.0) {
-                            setState(() {
-                              scale =
-                                  (startScale * details.scale).clamp(0.5, 5.0);
-                            });
-                          }
+                          setState(() {
+                            if (details.pointerCount >= 2) {
+                              // 计算新的缩放比例
+                              final newScale =
+                                  (startScale * details.scale).clamp(0.1, 20.0);
+
+                              // 获取缩放的焦点
+                              final focalPoint = details.localFocalPoint;
+                              final focalPointDelta = details.focalPointDelta;
+
+                              // 计算缩放前后的偏移差异
+                              final double scaleFactor = newScale / scale;
+                              final Offset focalPointScaled =
+                                  focalPoint - offset;
+                              final Offset newOffset =
+                                  focalPoint - (focalPointScaled * scaleFactor);
+
+                              // 应用缩放和平移
+                              scale = newScale;
+                              offset = newOffset +
+                                  (focalPointDelta * 2.0); // 增加平移幅度到2.0
+                            }
+                          });
                         },
-                        child: CustomPaint(
-                          size: Size.infinite,
-                          painter: PathPainter(
-                            points: points,
-                            minX: minX,
-                            maxX: maxX,
-                            minY: minY,
-                            maxY: maxY,
-                            scale: scale,
-                            offset: offset,
+                        child: Listener(
+                          onPointerDown: (details) {
+                            if (details.buttons == kSecondaryButton) {
+                              startOffset = offset;
+                              dragStartPoint = details.localPosition;
+                            }
+                          },
+                          onPointerMove: (details) {
+                            if (details.buttons == kSecondaryButton) {
+                              setState(() {
+                                offset = startOffset +
+                                    (details.localPosition - dragStartPoint!);
+                              });
+                            }
+                          },
+                          child: CustomPaint(
+                            size: Size.infinite,
+                            painter: PathPainter(
+                              points: points,
+                              minX: minX,
+                              maxX: maxX,
+                              minY: minY,
+                              maxY: maxY,
+                              scale: scale,
+                              offset: offset,
+                              strokeWidth: strokeWidth,
+                            ),
                           ),
                         ),
                       ),
@@ -919,6 +958,7 @@ class PathPainter extends CustomPainter {
   final double maxY;
   final double scale;
   final Offset offset;
+  final double strokeWidth;
 
   // 定义一组漂亮的颜色
   final List<Color> pathColors = [
@@ -942,6 +982,7 @@ class PathPainter extends CustomPainter {
     required this.maxY,
     required this.scale,
     required this.offset,
+    required this.strokeWidth,
   });
 
   @override
@@ -951,8 +992,8 @@ class PathPainter extends CustomPainter {
     // 定义绘制区域
     final rect = Rect.fromCenter(
       center: Offset(size.width / 2, size.height / 2),
-      width: size.width * 0.9,
-      height: size.height * 0.9,
+      width: size.width * 0.95,
+      height: size.height * 0.95,
     );
 
     // 绘制背景和边框
@@ -970,7 +1011,7 @@ class PathPainter extends CustomPainter {
     // 计算缩放比例
     final xScale = rect.width / (maxX - minX);
     final yScale = rect.height / (maxY - minY);
-    final scaleFactor = min(xScale, yScale) * 0.9;
+    final scaleFactor = min(xScale, yScale) * 0.95;
 
     // 创建裁剪区域
     canvas.save();
@@ -990,7 +1031,7 @@ class PathPainter extends CustomPainter {
       // 为每条路径选择一个颜色
       final pathPaint = Paint()
         ..color = pathColors[i % pathColors.length]
-        ..strokeWidth = 2
+        ..strokeWidth = strokeWidth
         ..style = PaintingStyle.stroke;
 
       final path = Path();
@@ -1016,5 +1057,6 @@ class PathPainter extends CustomPainter {
   bool shouldRepaint(PathPainter oldDelegate) =>
       points != oldDelegate.points ||
       scale != oldDelegate.scale ||
-      offset != oldDelegate.offset;
+      offset != oldDelegate.offset ||
+      strokeWidth != oldDelegate.strokeWidth;
 }
