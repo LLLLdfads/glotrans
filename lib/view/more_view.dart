@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:excel/excel.dart' as e;
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'dart:convert';
 
 class MoreView extends StatefulWidget {
   const MoreView({super.key});
@@ -587,6 +590,14 @@ class _MoreViewState extends State<MoreView> {
           );
         },
       );
+    } else if (index == 4) {
+      // 绘制地图功能
+      showDialog(
+        context: context,
+        builder: (_) {
+          return const MapDialog();
+        },
+      );
     }
   }
 
@@ -727,4 +738,283 @@ class _MoreViewState extends State<MoreView> {
       ],
     );
   }
+}
+
+// 新建地图对话框组件
+class MapDialog extends StatefulWidget {
+  const MapDialog({super.key});
+
+  @override
+  State<MapDialog> createState() => _MapDialogState();
+}
+
+class _MapDialogState extends State<MapDialog> {
+  final TextEditingController _dataController = TextEditingController();
+  List<List<Point>> points = [];
+  double minX = 0, maxX = 0, minY = 0, maxY = 0;
+  double scale = 1.0;
+  Offset offset = Offset.zero;
+  double startScale = 1.0;
+  Offset startOffset = Offset.zero;
+  Offset? dragStartPoint;
+
+  void _parseData() {
+    try {
+      final data = jsonDecode(_dataController.text) as List;
+      points = [];
+
+      // 重置边界值
+      minX = double.infinity;
+      maxX = double.negativeInfinity;
+      minY = double.infinity;
+      maxY = double.negativeInfinity;
+
+      for (var pointList in data) {
+        List<Point> linePoints = [];
+        for (var point in pointList) {
+          final longitude = (point['longitude'] as num).toDouble();
+          final latitude = (point['latitude'] as num).toDouble();
+
+          // 更新边界值
+          minX = min(minX, longitude);
+          maxX = max(maxX, longitude);
+          minY = min(minY, latitude);
+          maxY = max(maxY, latitude);
+
+          linePoints.add(Point(longitude, latitude));
+        }
+        points.add(linePoints);
+      }
+      setState(() {});
+    } catch (e) {
+      showToast('数据格式错误');
+    }
+  }
+
+  void _clearData() {
+    setState(() {
+      _dataController.clear();
+      points.clear();
+      scale = 1.0;
+      offset = Offset.zero;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF2A2D3E),
+      child: Container(
+        width: 800,
+        height: 600,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _dataController,
+                    style: const TextStyle(color: Colors.white),
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText:
+                          '输入坐标点数据 [{"longitude": x, "latitude": y}, ...]',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _parseData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3E4396),
+                      ),
+                      child: const Text('解析数据'),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _clearData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text('清空数据'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: points.isEmpty
+                  ? const Center(
+                      child: Text(
+                        '请输入数据',
+                        style: TextStyle(color: Colors.white38),
+                      ),
+                    )
+                  : Listener(
+                      onPointerDown: (details) {
+                        dragStartPoint = details.localPosition;
+                        startOffset = offset;
+                      },
+                      onPointerMove: (details) {
+                        if (dragStartPoint != null) {
+                          setState(() {
+                            offset = startOffset +
+                                (details.localPosition - dragStartPoint!);
+                          });
+                        }
+                      },
+                      onPointerUp: (details) {
+                        dragStartPoint = null;
+                      },
+                      child: GestureDetector(
+                        onScaleStart: (details) {
+                          startScale = scale;
+                        },
+                        onScaleUpdate: (details) {
+                          if (details.scale != 1.0) {
+                            setState(() {
+                              scale =
+                                  (startScale * details.scale).clamp(0.5, 5.0);
+                            });
+                          }
+                        },
+                        child: CustomPaint(
+                          size: Size.infinite,
+                          painter: PathPainter(
+                            points: points,
+                            minX: minX,
+                            maxX: maxX,
+                            minY: minY,
+                            maxY: maxY,
+                            scale: scale,
+                            offset: offset,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PathPainter extends CustomPainter {
+  final List<List<Point>> points;
+  final double minX;
+  final double maxX;
+  final double minY;
+  final double maxY;
+  final double scale;
+  final Offset offset;
+
+  // 定义一组漂亮的颜色
+  final List<Color> pathColors = [
+    const Color(0xFF4ECDC4), // 青绿色
+    const Color(0xFFFF6B6B), // 珊瑚红
+    const Color(0xFFFFBE76), // 橙色
+    const Color(0xFF45B7D1), // 天蓝色
+    const Color(0xFFA17FE0), // 紫色
+    const Color(0xFF26DE81), // 绿色
+    const Color(0xFFFF9FF3), // 粉色
+    const Color(0xFFFED330), // 黄色
+    const Color(0xFF2BCBBA), // 蓝绿色
+    const Color(0xFFFC5C65), // 红色
+  ];
+
+  PathPainter({
+    required this.points,
+    required this.minX,
+    required this.maxX,
+    required this.minY,
+    required this.maxY,
+    required this.scale,
+    required this.offset,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.isEmpty) return;
+
+    // 定义绘制区域
+    final rect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: size.width * 0.9,
+      height: size.height * 0.9,
+    );
+
+    // 绘制背景和边框
+    final bgPaint = Paint()
+      ..color = Colors.black.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+    final borderPaint = Paint()
+      ..color = Colors.white24
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    canvas.drawRect(rect, bgPaint);
+    canvas.drawRect(rect, borderPaint);
+
+    // 计算缩放比例
+    final xScale = rect.width / (maxX - minX);
+    final yScale = rect.height / (maxY - minY);
+    final scaleFactor = min(xScale, yScale) * 0.9;
+
+    // 创建裁剪区域
+    canvas.save();
+    canvas.clipRect(rect);
+
+    // 移动画布原点到矩形中心
+    canvas.translate(rect.center.dx, rect.center.dy);
+    // 应用缩放和平移
+    canvas.translate(offset.dx, offset.dy);
+    canvas.scale(scale);
+
+    // 绘制路径
+    for (var i = 0; i < points.length; i++) {
+      var linePoints = points[i];
+      if (linePoints.isEmpty) continue;
+
+      // 为每条路径选择一个颜色
+      final pathPaint = Paint()
+        ..color = pathColors[i % pathColors.length]
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+
+      final path = Path();
+      var firstPoint = linePoints[0];
+      var startX = (firstPoint.x - (maxX + minX) / 2) * scaleFactor;
+      var startY = (firstPoint.y - (maxY + minY) / 2) * scaleFactor;
+      path.moveTo(startX, startY);
+
+      for (var j = 1; j < linePoints.length; j++) {
+        var point = linePoints[j];
+        var x = (point.x - (maxX + minX) / 2) * scaleFactor;
+        var y = (point.y - (maxY + minY) / 2) * scaleFactor;
+        path.lineTo(x, y);
+      }
+
+      canvas.drawPath(path, pathPaint);
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(PathPainter oldDelegate) =>
+      points != oldDelegate.points ||
+      scale != oldDelegate.scale ||
+      offset != oldDelegate.offset;
 }
